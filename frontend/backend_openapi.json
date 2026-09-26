@@ -1,0 +1,974 @@
+﻿{
+    "openapi":  "3.1.0",
+    "info":  {
+                 "title":  "SatQuery AI - Unified Remote Sensing Agentic Engine API",
+                 "description":  "Production REST API for SatQuery AI. Orchestrates multi-modal remote sensing queries across Query Understanding, Agent Registry, Routing, Execution, 17-stage Orchestration, Auditable Tracing, and Evidence Aggregation.",
+                 "version":  "1.0.0"
+             },
+    "paths":  {
+                  "/api/traces":  {
+                                      "get":  {
+                                                  "tags":  [
+                                                               "Trace System"
+                                                           ],
+                                                  "summary":  "List Traces",
+                                                  "description":  "Step 29: List recent execution traces with optional status filtering.",
+                                                  "operationId":  "list_traces_api_traces_get",
+                                                  "parameters":  [
+                                                                     {
+                                                                         "name":  "limit",
+                                                                         "in":  "query",
+                                                                         "required":  false,
+                                                                         "schema":  {
+                                                                                        "type":  "integer",
+                                                                                        "maximum":  100,
+                                                                                        "minimum":  1,
+                                                                                        "default":  20,
+                                                                                        "title":  "Limit"
+                                                                                    }
+                                                                     },
+                                                                     {
+                                                                         "name":  "status",
+                                                                         "in":  "query",
+                                                                         "required":  false,
+                                                                         "schema":  {
+                                                                                        "anyOf":  [
+                                                                                                      {
+                                                                                                          "type":  "string"
+                                                                                                      },
+                                                                                                      {
+                                                                                                          "type":  "null"
+                                                                                                      }
+                                                                                                  ],
+                                                                                        "title":  "Status"
+                                                                                    }
+                                                                     }
+                                                                 ],
+                                                  "responses":  {
+                                                                    "200":  {
+                                                                                "description":  "Successful Response",
+                                                                                "content":  {
+                                                                                                "application/json":  {
+                                                                                                                         "schema":  {
+                                                                                                                                        "type":  "array",
+                                                                                                                                        "items":  {
+                                                                                                                                                      "type":  "object",
+                                                                                                                                                      "additionalProperties":  true
+                                                                                                                                                  },
+                                                                                                                                        "title":  "Response List Traces Api Traces Get"
+                                                                                                                                    }
+                                                                                                                     }
+                                                                                            }
+                                                                            },
+                                                                    "422":  {
+                                                                                "description":  "Validation Error",
+                                                                                "content":  {
+                                                                                                "application/json":  {
+                                                                                                                         "schema":  {
+                                                                                                                                        "$ref":  "#/components/schemas/HTTPValidationError"
+                                                                                                                                    }
+                                                                                                                     }
+                                                                                            }
+                                                                            }
+                                                                }
+                                              }
+                                  },
+                  "/api/trace/{trace_id}":  {
+                                                "get":  {
+                                                            "tags":  [
+                                                                         "Trace System"
+                                                                     ],
+                                                            "summary":  "Get Trace Detail",
+                                                            "description":  "Step 29: Retrieve complete JSON telemetry for a specific trace_id.",
+                                                            "operationId":  "get_trace_detail_api_trace__trace_id__get",
+                                                            "parameters":  [
+                                                                               {
+                                                                                   "name":  "trace_id",
+                                                                                   "in":  "path",
+                                                                                   "required":  true,
+                                                                                   "schema":  {
+                                                                                                  "type":  "string",
+                                                                                                  "title":  "Trace Id"
+                                                                                              }
+                                                                               }
+                                                                           ],
+                                                            "responses":  {
+                                                                              "200":  {
+                                                                                          "description":  "Successful Response",
+                                                                                          "content":  {
+                                                                                                          "application/json":  {
+                                                                                                                                   "schema":  {
+
+                                                                                                                                              }
+                                                                                                                               }
+                                                                                                      }
+                                                                                      },
+                                                                              "422":  {
+                                                                                          "description":  "Validation Error",
+                                                                                          "content":  {
+                                                                                                          "application/json":  {
+                                                                                                                                   "schema":  {
+                                                                                                                                                  "$ref":  "#/components/schemas/HTTPValidationError"
+                                                                                                                                              }
+                                                                                                                               }
+                                                                                                      }
+                                                                                      }
+                                                                          }
+                                                        }
+                                            },
+                  "/api/trace/{trace_id}/export":  {
+                                                       "get":  {
+                                                                   "tags":  [
+                                                                                "Trace System"
+                                                                            ],
+                                                                   "summary":  "Export Trace Json",
+                                                                   "description":  "Step 29: Export downloadable trace JSON file.",
+                                                                   "operationId":  "export_trace_json_api_trace__trace_id__export_get",
+                                                                   "parameters":  [
+                                                                                      {
+                                                                                          "name":  "trace_id",
+                                                                                          "in":  "path",
+                                                                                          "required":  true,
+                                                                                          "schema":  {
+                                                                                                         "type":  "string",
+                                                                                                         "title":  "Trace Id"
+                                                                                                     }
+                                                                                      }
+                                                                                  ],
+                                                                   "responses":  {
+                                                                                     "200":  {
+                                                                                                 "description":  "Successful Response",
+                                                                                                 "content":  {
+                                                                                                                 "application/json":  {
+                                                                                                                                          "schema":  {
+
+                                                                                                                                                     }
+                                                                                                                                      }
+                                                                                                             }
+                                                                                             },
+                                                                                     "422":  {
+                                                                                                 "description":  "Validation Error",
+                                                                                                 "content":  {
+                                                                                                                 "application/json":  {
+                                                                                                                                          "schema":  {
+                                                                                                                                                         "$ref":  "#/components/schemas/HTTPValidationError"
+                                                                                                                                                     }
+                                                                                                                                      }
+                                                                                                             }
+                                                                                             }
+                                                                                 }
+                                                               }
+                                                   },
+                  "/api/trace/{trace_id}/viz":  {
+                                                    "get":  {
+                                                                "tags":  [
+                                                                             "Trace System"
+                                                                         ],
+                                                                "summary":  "Get Trace Visualization",
+                                                                "description":  "Step 30: Render self-contained HTML visual timeline for the requested trace.",
+                                                                "operationId":  "get_trace_visualization_api_trace__trace_id__viz_get",
+                                                                "parameters":  [
+                                                                                   {
+                                                                                       "name":  "trace_id",
+                                                                                       "in":  "path",
+                                                                                       "required":  true,
+                                                                                       "schema":  {
+                                                                                                      "type":  "string",
+                                                                                                      "title":  "Trace Id"
+                                                                                                  }
+                                                                                   }
+                                                                               ],
+                                                                "responses":  {
+                                                                                  "200":  {
+                                                                                              "description":  "Successful Response",
+                                                                                              "content":  {
+                                                                                                              "text/html":  {
+                                                                                                                                "schema":  {
+                                                                                                                                               "type":  "string"
+                                                                                                                                           }
+                                                                                                                            }
+                                                                                                          }
+                                                                                          },
+                                                                                  "422":  {
+                                                                                              "description":  "Validation Error",
+                                                                                              "content":  {
+                                                                                                              "application/json":  {
+                                                                                                                                       "schema":  {
+                                                                                                                                                      "$ref":  "#/components/schemas/HTTPValidationError"
+                                                                                                                                                  }
+                                                                                                                                   }
+                                                                                                          }
+                                                                                          }
+                                                                              }
+                                                            }
+                                                },
+                  "/health":  {
+                                  "get":  {
+                                              "tags":  [
+                                                           "Health"
+                                                       ],
+                                              "summary":  "Health Check",
+                                              "description":  "Returns service health status and active component telemetry.",
+                                              "operationId":  "health_check_health_get",
+                                              "responses":  {
+                                                                "200":  {
+                                                                            "description":  "Successful Response",
+                                                                            "content":  {
+                                                                                            "application/json":  {
+                                                                                                                     "schema":  {
+
+                                                                                                                                }
+                                                                                                                 }
+                                                                                        }
+                                                                        }
+                                                            }
+                                          }
+                              },
+                  "/":  {
+                            "get":  {
+                                        "tags":  [
+                                                     "Health"
+                                                 ],
+                                        "summary":  "Health Check",
+                                        "description":  "Returns service health status and active component telemetry.",
+                                        "operationId":  "health_check__get",
+                                        "responses":  {
+                                                          "200":  {
+                                                                      "description":  "Successful Response",
+                                                                      "content":  {
+                                                                                      "application/json":  {
+                                                                                                               "schema":  {
+
+                                                                                                                          }
+                                                                                                           }
+                                                                                  }
+                                                                  }
+                                                      }
+                                    }
+                        },
+                  "/api/db/health":  {
+                                         "get":  {
+                                                     "tags":  [
+                                                                  "Health"
+                                                              ],
+                                                     "summary":  "Db Health Check",
+                                                     "description":  "Returns database connection health and active PostgreSQL pool telemetry.",
+                                                     "operationId":  "db_health_check_api_db_health_get",
+                                                     "responses":  {
+                                                                       "200":  {
+                                                                                   "description":  "Successful Response",
+                                                                                   "content":  {
+                                                                                                   "application/json":  {
+                                                                                                                            "schema":  {
+
+                                                                                                                                       }
+                                                                                                                        }
+                                                                                               }
+                                                                               }
+                                                                   }
+                                                 }
+                                     },
+                  "/api/query/process":  {
+                                             "post":  {
+                                                          "tags":  [
+                                                                       "Query Pipeline"
+                                                                   ],
+                                                          "summary":  "Process Query Endpoint",
+                                                          "description":  "Executes Step 1 (Query Understanding) \u0026 Step 2 (SatQuery Router).\nReturns Structured Query Object (SQO) and auditable Execution Plan.\nPersists query session into PostgreSQL database.",
+                                                          "operationId":  "process_query_endpoint_api_query_process_post",
+                                                          "requestBody":  {
+                                                                              "content":  {
+                                                                                              "application/json":  {
+                                                                                                                       "schema":  {
+                                                                                                                                      "$ref":  "#/components/schemas/ProcessQueryRequest"
+                                                                                                                                  }
+                                                                                                                   }
+                                                                                          },
+                                                                              "required":  true
+                                                                          },
+                                                          "responses":  {
+                                                                            "200":  {
+                                                                                        "description":  "Successful Response",
+                                                                                        "content":  {
+                                                                                                        "application/json":  {
+                                                                                                                                 "schema":  {
+
+                                                                                                                                            }
+                                                                                                                             }
+                                                                                                    }
+                                                                                    },
+                                                                            "422":  {
+                                                                                        "description":  "Validation Error",
+                                                                                        "content":  {
+                                                                                                        "application/json":  {
+                                                                                                                                 "schema":  {
+                                                                                                                                                "$ref":  "#/components/schemas/HTTPValidationError"
+                                                                                                                                            }
+                                                                                                                             }
+                                                                                                    }
+                                                                                    }
+                                                                        }
+                                                      }
+                                         },
+                  "/api/query/execute":  {
+                                             "post":  {
+                                                          "tags":  [
+                                                                       "Query Pipeline"
+                                                                   ],
+                                                          "summary":  "Execute Query Endpoint",
+                                                          "description":  "Full End-to-End Execution (Steps 1 through 7):\nQuery Understanding -\u003e Router -\u003e Agent Registry -\u003e Execution -\u003e Orchestration -\u003e Trace -\u003e Aggregation.\nReturns complete final response with grounded visual evidence artifacts and telemetry trace.\nPersists query session, trace, evidence artifacts, and synthesized result into PostgreSQL.",
+                                                          "operationId":  "execute_query_endpoint_api_query_execute_post",
+                                                          "requestBody":  {
+                                                                              "content":  {
+                                                                                              "application/json":  {
+                                                                                                                       "schema":  {
+                                                                                                                                      "$ref":  "#/components/schemas/ExecuteQueryRequest"
+                                                                                                                                  }
+                                                                                                                   }
+                                                                                          },
+                                                                              "required":  true
+                                                                          },
+                                                          "responses":  {
+                                                                            "200":  {
+                                                                                        "description":  "Successful Response",
+                                                                                        "content":  {
+                                                                                                        "application/json":  {
+                                                                                                                                 "schema":  {
+
+                                                                                                                                            }
+                                                                                                                             }
+                                                                                                    }
+                                                                                    },
+                                                                            "422":  {
+                                                                                        "description":  "Validation Error",
+                                                                                        "content":  {
+                                                                                                        "application/json":  {
+                                                                                                                                 "schema":  {
+                                                                                                                                                "$ref":  "#/components/schemas/HTTPValidationError"
+                                                                                                                                            }
+                                                                                                                             }
+                                                                                                    }
+                                                                                    }
+                                                                        }
+                                                      }
+                                         },
+                  "/api/agents":  {
+                                      "get":  {
+                                                  "tags":  [
+                                                               "Agent Registry"
+                                                           ],
+                                                  "summary":  "List Registered Agents",
+                                                  "description":  "Discovers specialist agents registered in the Agent Registry DB catalog.",
+                                                  "operationId":  "list_registered_agents_api_agents_get",
+                                                  "parameters":  [
+                                                                     {
+                                                                         "name":  "capability",
+                                                                         "in":  "query",
+                                                                         "required":  false,
+                                                                         "schema":  {
+                                                                                        "anyOf":  [
+                                                                                                      {
+                                                                                                          "type":  "string"
+                                                                                                      },
+                                                                                                      {
+                                                                                                          "type":  "null"
+                                                                                                      }
+                                                                                                  ],
+                                                                                        "title":  "Capability"
+                                                                                    }
+                                                                     },
+                                                                     {
+                                                                         "name":  "modality",
+                                                                         "in":  "query",
+                                                                         "required":  false,
+                                                                         "schema":  {
+                                                                                        "anyOf":  [
+                                                                                                      {
+                                                                                                          "type":  "string"
+                                                                                                      },
+                                                                                                      {
+                                                                                                          "type":  "null"
+                                                                                                      }
+                                                                                                  ],
+                                                                                        "title":  "Modality"
+                                                                                    }
+                                                                     },
+                                                                     {
+                                                                         "name":  "status_filter",
+                                                                         "in":  "query",
+                                                                         "required":  false,
+                                                                         "schema":  {
+                                                                                        "anyOf":  [
+                                                                                                      {
+                                                                                                          "type":  "string"
+                                                                                                      },
+                                                                                                      {
+                                                                                                          "type":  "null"
+                                                                                                      }
+                                                                                                  ],
+                                                                                        "default":  "active",
+                                                                                        "title":  "Status Filter"
+                                                                                    }
+                                                                     }
+                                                                 ],
+                                                  "responses":  {
+                                                                    "200":  {
+                                                                                "description":  "Successful Response",
+                                                                                "content":  {
+                                                                                                "application/json":  {
+                                                                                                                         "schema":  {
+
+                                                                                                                                    }
+                                                                                                                     }
+                                                                                            }
+                                                                            },
+                                                                    "422":  {
+                                                                                "description":  "Validation Error",
+                                                                                "content":  {
+                                                                                                "application/json":  {
+                                                                                                                         "schema":  {
+                                                                                                                                        "$ref":  "#/components/schemas/HTTPValidationError"
+                                                                                                                                    }
+                                                                                                                     }
+                                                                                            }
+                                                                            }
+                                                                }
+                                              }
+                                  },
+                  "/api/agents/register":  {
+                                               "post":  {
+                                                            "tags":  [
+                                                                         "Agent Registry"
+                                                                     ],
+                                                            "summary":  "Register Custom Agent Endpoint",
+                                                            "description":  "Registers a new specialist remote sensing agent into the Agent Registry catalog.",
+                                                            "operationId":  "register_custom_agent_endpoint_api_agents_register_post",
+                                                            "requestBody":  {
+                                                                                "content":  {
+                                                                                                "application/json":  {
+                                                                                                                         "schema":  {
+                                                                                                                                        "$ref":  "#/components/schemas/AgentRegisterRequest"
+                                                                                                                                    }
+                                                                                                                     }
+                                                                                            },
+                                                                                "required":  true
+                                                                            },
+                                                            "responses":  {
+                                                                              "200":  {
+                                                                                          "description":  "Successful Response",
+                                                                                          "content":  {
+                                                                                                          "application/json":  {
+                                                                                                                                   "schema":  {
+
+                                                                                                                                              }
+                                                                                                                               }
+                                                                                                      }
+                                                                                      },
+                                                                              "422":  {
+                                                                                          "description":  "Validation Error",
+                                                                                          "content":  {
+                                                                                                          "application/json":  {
+                                                                                                                                   "schema":  {
+                                                                                                                                                  "$ref":  "#/components/schemas/HTTPValidationError"
+                                                                                                                                              }
+                                                                                                                               }
+                                                                                                      }
+                                                                                      }
+                                                                          }
+                                                        }
+                                           },
+                  "/api/models/register/change":  {
+                                                      "post":  {
+                                                                   "tags":  [
+                                                                                "Model Binding"
+                                                                            ],
+                                                                   "summary":  "Register Change Model Endpoint",
+                                                                   "description":  "Registers model metadata and binding for Person 4 (Change Analysis Lead).\nExposes dynamic binding telemetry for Person 4\u0027s bi-temporal change model.",
+                                                                   "operationId":  "register_change_model_endpoint_api_models_register_change_post",
+                                                                   "requestBody":  {
+                                                                                       "content":  {
+                                                                                                       "application/json":  {
+                                                                                                                                "schema":  {
+                                                                                                                                               "additionalProperties":  true,
+                                                                                                                                               "type":  "object",
+                                                                                                                                               "title":  "Payload"
+                                                                                                                                           }
+                                                                                                                            }
+                                                                                                   },
+                                                                                       "required":  true
+                                                                                   },
+                                                                   "responses":  {
+                                                                                     "200":  {
+                                                                                                 "description":  "Successful Response",
+                                                                                                 "content":  {
+                                                                                                                 "application/json":  {
+                                                                                                                                          "schema":  {
+
+                                                                                                                                                     }
+                                                                                                                                      }
+                                                                                                             }
+                                                                                             },
+                                                                                     "422":  {
+                                                                                                 "description":  "Validation Error",
+                                                                                                 "content":  {
+                                                                                                                 "application/json":  {
+                                                                                                                                          "schema":  {
+                                                                                                                                                         "$ref":  "#/components/schemas/HTTPValidationError"
+                                                                                                                                                     }
+                                                                                                                                      }
+                                                                                                             }
+                                                                                             }
+                                                                                 }
+                                                               }
+                                                  },
+                  "/api/models/register/vlm":  {
+                                                   "post":  {
+                                                                "tags":  [
+                                                                             "Model Binding"
+                                                                         ],
+                                                                "summary":  "Register Vlm Model Endpoint",
+                                                                "description":  "Registers model metadata and binding for Person 2 (VLM / BigEarthNet Lead).\nExposes dynamic binding telemetry for Person 2\u0027s BigEarthNet-adapted RS-VLM model.",
+                                                                "operationId":  "register_vlm_model_endpoint_api_models_register_vlm_post",
+                                                                "requestBody":  {
+                                                                                    "content":  {
+                                                                                                    "application/json":  {
+                                                                                                                             "schema":  {
+                                                                                                                                            "additionalProperties":  true,
+                                                                                                                                            "type":  "object",
+                                                                                                                                            "title":  "Payload"
+                                                                                                                                        }
+                                                                                                                         }
+                                                                                                },
+                                                                                    "required":  true
+                                                                                },
+                                                                "responses":  {
+                                                                                  "200":  {
+                                                                                              "description":  "Successful Response",
+                                                                                              "content":  {
+                                                                                                              "application/json":  {
+                                                                                                                                       "schema":  {
+
+                                                                                                                                                  }
+                                                                                                                                   }
+                                                                                                          }
+                                                                                          },
+                                                                                  "422":  {
+                                                                                              "description":  "Validation Error",
+                                                                                              "content":  {
+                                                                                                              "application/json":  {
+                                                                                                                                       "schema":  {
+                                                                                                                                                      "$ref":  "#/components/schemas/HTTPValidationError"
+                                                                                                                                                  }
+                                                                                                                                   }
+                                                                                                          }
+                                                                                          }
+                                                                              }
+                                                            }
+                                               },
+                  "/api/models/register/crossmodal":  {
+                                                          "post":  {
+                                                                       "tags":  [
+                                                                                    "Model Binding"
+                                                                                ],
+                                                                       "summary":  "Register Crossmodal Model Endpoint",
+                                                                       "description":  "Registers model metadata and binding for Person 5 (Cross-Modal Fusion Lead).\nExposes dynamic binding telemetry for Person 5\u0027s Optical-SAR cross-attention fusion model.",
+                                                                       "operationId":  "register_crossmodal_model_endpoint_api_models_register_crossmodal_post",
+                                                                       "requestBody":  {
+                                                                                           "content":  {
+                                                                                                           "application/json":  {
+                                                                                                                                    "schema":  {
+                                                                                                                                                   "additionalProperties":  true,
+                                                                                                                                                   "type":  "object",
+                                                                                                                                                   "title":  "Payload"
+                                                                                                                                               }
+                                                                                                                                }
+                                                                                                       },
+                                                                                           "required":  true
+                                                                                       },
+                                                                       "responses":  {
+                                                                                         "200":  {
+                                                                                                     "description":  "Successful Response",
+                                                                                                     "content":  {
+                                                                                                                     "application/json":  {
+                                                                                                                                              "schema":  {
+
+                                                                                                                                                         }
+                                                                                                                                          }
+                                                                                                                 }
+                                                                                                 },
+                                                                                         "422":  {
+                                                                                                     "description":  "Validation Error",
+                                                                                                     "content":  {
+                                                                                                                     "application/json":  {
+                                                                                                                                              "schema":  {
+                                                                                                                                                             "$ref":  "#/components/schemas/HTTPValidationError"
+                                                                                                                                                         }
+                                                                                                                                          }
+                                                                                                                 }
+                                                                                                 }
+                                                                                     }
+                                                                   }
+                                                      }
+              },
+    "components":  {
+                       "schemas":  {
+                                       "AgentCapability":  {
+                                                               "type":  "string",
+                                                               "enum":  [
+                                                                            "single_image_vqa",
+                                                                            "region_grounding",
+                                                                            "scene_captioning",
+                                                                            "bitemporal_change_detection",
+                                                                            "change_vqa",
+                                                                            "cross_modal_fusion"
+                                                                        ],
+                                                               "title":  "AgentCapability"
+                                                           },
+                                       "AgentRegisterRequest":  {
+                                                                    "properties":  {
+                                                                                       "agent_id":  {
+                                                                                                        "type":  "string",
+                                                                                                        "maxLength":  64,
+                                                                                                        "minLength":  3,
+                                                                                                        "pattern":  "^[a-zA-Z0-9_\\-]+$",
+                                                                                                        "title":  "Agent Id",
+                                                                                                        "description":  "Unique string identifier for the specialist agent"
+                                                                                                    },
+                                                                                       "name":  {
+                                                                                                    "type":  "string",
+                                                                                                    "maxLength":  100,
+                                                                                                    "minLength":  3,
+                                                                                                    "title":  "Name",
+                                                                                                    "description":  "Display name of the agent"
+                                                                                                },
+                                                                                       "version":  {
+                                                                                                       "type":  "string",
+                                                                                                       "maxLength":  32,
+                                                                                                       "minLength":  1,
+                                                                                                       "title":  "Version",
+                                                                                                       "description":  "Semantic version string"
+                                                                                                   },
+                                                                                       "description":  {
+                                                                                                           "type":  "string",
+                                                                                                           "maxLength":  1000,
+                                                                                                           "minLength":  10,
+                                                                                                           "title":  "Description",
+                                                                                                           "description":  "Detailed operational description"
+                                                                                                       },
+                                                                                       "capabilities":  {
+                                                                                                            "items":  {
+                                                                                                                          "$ref":  "#/components/schemas/AgentCapability"
+                                                                                                                      },
+                                                                                                            "type":  "array",
+                                                                                                            "minItems":  1,
+                                                                                                            "title":  "Capabilities",
+                                                                                                            "description":  "List of supported functional capabilities"
+                                                                                                        },
+                                                                                       "input_modalities":  {
+                                                                                                                "items":  {
+                                                                                                                              "$ref":  "#/components/schemas/InputModality"
+                                                                                                                          },
+                                                                                                                "type":  "array",
+                                                                                                                "minItems":  1,
+                                                                                                                "title":  "Input Modalities",
+                                                                                                                "description":  "Supported remote sensing image modalities"
+                                                                                                            },
+                                                                                       "supported_formats":  {
+                                                                                                                 "items":  {
+                                                                                                                               "$ref":  "#/components/schemas/InputFormat"
+                                                                                                                           },
+                                                                                                                 "type":  "array",
+                                                                                                                 "minItems":  1,
+                                                                                                                 "title":  "Supported Formats",
+                                                                                                                 "description":  "Supported file formats"
+                                                                                                             },
+                                                                                       "endpoint_url":  {
+                                                                                                            "type":  "string",
+                                                                                                            "title":  "Endpoint Url",
+                                                                                                            "description":  "REST endpoint URL where agent service is hosted"
+                                                                                                        },
+                                                                                       "parameters_schema":  {
+                                                                                                                 "additionalProperties":  true,
+                                                                                                                 "type":  "object",
+                                                                                                                 "title":  "Parameters Schema",
+                                                                                                                 "description":  "JSON Schema dictionary of allowed execution parameters"
+                                                                                                             },
+                                                                                       "metadata":  {
+                                                                                                        "additionalProperties":  true,
+                                                                                                        "type":  "object",
+                                                                                                        "title":  "Metadata",
+                                                                                                        "description":  "Remote sensing domain metadata (e.g. training set, backbone architecture, resolution)"
+                                                                                                    },
+                                                                                       "status":  {
+                                                                                                      "$ref":  "#/components/schemas/AgentStatus",
+                                                                                                      "description":  "Initial operational status",
+                                                                                                      "default":  "active"
+                                                                                                  }
+                                                                                   },
+                                                                    "type":  "object",
+                                                                    "required":  [
+                                                                                     "agent_id",
+                                                                                     "name",
+                                                                                     "version",
+                                                                                     "description",
+                                                                                     "capabilities",
+                                                                                     "input_modalities",
+                                                                                     "supported_formats",
+                                                                                     "endpoint_url"
+                                                                                 ],
+                                                                    "title":  "AgentRegisterRequest"
+                                                                },
+                                       "AgentStatus":  {
+                                                           "type":  "string",
+                                                           "enum":  [
+                                                                        "active",
+                                                                        "degraded",
+                                                                        "inactive",
+                                                                        "maintenance"
+                                                                    ],
+                                                           "title":  "AgentStatus"
+                                                       },
+                                       "ExecuteQueryRequest":  {
+                                                                   "properties":  {
+                                                                                      "raw_query":  {
+                                                                                                        "type":  "string",
+                                                                                                        "title":  "Raw Query"
+                                                                                                    },
+                                                                                      "image_inputs":  {
+                                                                                                           "items":  {
+                                                                                                                         "$ref":  "#/components/schemas/ImageInputSchema"
+                                                                                                                     },
+                                                                                                           "type":  "array",
+                                                                                                           "title":  "Image Inputs"
+                                                                                                       },
+                                                                                      "project_context":  {
+                                                                                                              "anyOf":  [
+                                                                                                                            {
+                                                                                                                                "additionalProperties":  true,
+                                                                                                                                "type":  "object"
+                                                                                                                            },
+                                                                                                                            {
+                                                                                                                                "type":  "null"
+                                                                                                                            }
+                                                                                                                        ],
+                                                                                                              "title":  "Project Context"
+                                                                                                          },
+                                                                                      "session_id":  {
+                                                                                                         "anyOf":  [
+                                                                                                                       {
+                                                                                                                           "type":  "string"
+                                                                                                                       },
+                                                                                                                       {
+                                                                                                                           "type":  "null"
+                                                                                                                       }
+                                                                                                                   ],
+                                                                                                         "title":  "Session Id"
+                                                                                                     }
+                                                                                  },
+                                                                   "type":  "object",
+                                                                   "required":  [
+                                                                                    "raw_query"
+                                                                                ],
+                                                                   "title":  "ExecuteQueryRequest"
+                                                               },
+                                       "HTTPValidationError":  {
+                                                                   "properties":  {
+                                                                                      "detail":  {
+                                                                                                     "items":  {
+                                                                                                                   "$ref":  "#/components/schemas/ValidationError"
+                                                                                                               },
+                                                                                                     "type":  "array",
+                                                                                                     "title":  "Detail"
+                                                                                                 }
+                                                                                  },
+                                                                   "type":  "object",
+                                                                   "title":  "HTTPValidationError"
+                                                               },
+                                       "ImageInputSchema":  {
+                                                                "properties":  {
+                                                                                   "image_id":  {
+                                                                                                    "anyOf":  [
+                                                                                                                  {
+                                                                                                                      "type":  "string"
+                                                                                                                  },
+                                                                                                                  {
+                                                                                                                      "type":  "null"
+                                                                                                                  }
+                                                                                                              ],
+                                                                                                    "title":  "Image Id"
+                                                                                                },
+                                                                                   "file_name":  {
+                                                                                                     "type":  "string",
+                                                                                                     "title":  "File Name"
+                                                                                                 },
+                                                                                   "format":  {
+                                                                                                  "type":  "string",
+                                                                                                  "title":  "Format",
+                                                                                                  "default":  "GeoTIFF"
+                                                                                              },
+                                                                                   "modality":  {
+                                                                                                    "type":  "string",
+                                                                                                    "title":  "Modality",
+                                                                                                    "default":  "OPTICAL"
+                                                                                                },
+                                                                                   "sensor_type":  {
+                                                                                                       "anyOf":  [
+                                                                                                                     {
+                                                                                                                         "type":  "string"
+                                                                                                                     },
+                                                                                                                     {
+                                                                                                                         "type":  "null"
+                                                                                                                     }
+                                                                                                                 ],
+                                                                                                       "title":  "Sensor Type"
+                                                                                                   },
+                                                                                   "timestamp":  {
+                                                                                                     "anyOf":  [
+                                                                                                                   {
+                                                                                                                       "type":  "string"
+                                                                                                                   },
+                                                                                                                   {
+                                                                                                                       "type":  "null"
+                                                                                                                   }
+                                                                                                               ],
+                                                                                                     "title":  "Timestamp"
+                                                                                                 },
+                                                                                   "bounds":  {
+                                                                                                  "anyOf":  [
+                                                                                                                {
+                                                                                                                    "items":  {
+                                                                                                                                  "type":  "number"
+                                                                                                                              },
+                                                                                                                    "type":  "array"
+                                                                                                                },
+                                                                                                                {
+                                                                                                                    "type":  "null"
+                                                                                                                }
+                                                                                                            ],
+                                                                                                  "title":  "Bounds"
+                                                                                              },
+                                                                                   "is_co_registered":  {
+                                                                                                            "anyOf":  [
+                                                                                                                          {
+                                                                                                                              "type":  "boolean"
+                                                                                                                          },
+                                                                                                                          {
+                                                                                                                              "type":  "null"
+                                                                                                                          }
+                                                                                                                      ],
+                                                                                                            "title":  "Is Co Registered"
+                                                                                                        }
+                                                                               },
+                                                                "type":  "object",
+                                                                "required":  [
+                                                                                 "file_name"
+                                                                             ],
+                                                                "title":  "ImageInputSchema"
+                                                            },
+                                       "InputFormat":  {
+                                                           "type":  "string",
+                                                           "enum":  [
+                                                                        "geotiff",
+                                                                        "tiff",
+                                                                        "png",
+                                                                        "jpeg"
+                                                                    ],
+                                                           "title":  "InputFormat"
+                                                       },
+                                       "InputModality":  {
+                                                             "type":  "string",
+                                                             "enum":  [
+                                                                          "optical",
+                                                                          "sar",
+                                                                          "bitemporal_optical",
+                                                                          "bitemporal_sar",
+                                                                          "cross_modal_optical_sar"
+                                                                      ],
+                                                             "title":  "InputModality"
+                                                         },
+                                       "ProcessQueryRequest":  {
+                                                                   "properties":  {
+                                                                                      "raw_query":  {
+                                                                                                        "type":  "string",
+                                                                                                        "title":  "Raw Query"
+                                                                                                    },
+                                                                                      "image_inputs":  {
+                                                                                                           "items":  {
+                                                                                                                         "$ref":  "#/components/schemas/ImageInputSchema"
+                                                                                                                     },
+                                                                                                           "type":  "array",
+                                                                                                           "title":  "Image Inputs"
+                                                                                                       },
+                                                                                      "project_context":  {
+                                                                                                              "anyOf":  [
+                                                                                                                            {
+                                                                                                                                "additionalProperties":  true,
+                                                                                                                                "type":  "object"
+                                                                                                                            },
+                                                                                                                            {
+                                                                                                                                "type":  "null"
+                                                                                                                            }
+                                                                                                                        ],
+                                                                                                              "title":  "Project Context"
+                                                                                                          },
+                                                                                      "session_id":  {
+                                                                                                         "anyOf":  [
+                                                                                                                       {
+                                                                                                                           "type":  "string"
+                                                                                                                       },
+                                                                                                                       {
+                                                                                                                           "type":  "null"
+                                                                                                                       }
+                                                                                                                   ],
+                                                                                                         "title":  "Session Id"
+                                                                                                     }
+                                                                                  },
+                                                                   "type":  "object",
+                                                                   "required":  [
+                                                                                    "raw_query"
+                                                                                ],
+                                                                   "title":  "ProcessQueryRequest"
+                                                               },
+                                       "ValidationError":  {
+                                                               "properties":  {
+                                                                                  "loc":  {
+                                                                                              "items":  {
+                                                                                                            "anyOf":  [
+                                                                                                                          {
+                                                                                                                              "type":  "string"
+                                                                                                                          },
+                                                                                                                          {
+                                                                                                                              "type":  "integer"
+                                                                                                                          }
+                                                                                                                      ]
+                                                                                                        },
+                                                                                              "type":  "array",
+                                                                                              "title":  "Location"
+                                                                                          },
+                                                                                  "msg":  {
+                                                                                              "type":  "string",
+                                                                                              "title":  "Message"
+                                                                                          },
+                                                                                  "type":  {
+                                                                                               "type":  "string",
+                                                                                               "title":  "Error Type"
+                                                                                           },
+                                                                                  "input":  {
+                                                                                                "title":  "Input"
+                                                                                            },
+                                                                                  "ctx":  {
+                                                                                              "type":  "object",
+                                                                                              "title":  "Context"
+                                                                                          }
+                                                                              },
+                                                               "type":  "object",
+                                                               "required":  [
+                                                                                "loc",
+                                                                                "msg",
+                                                                                "type"
+                                                                            ],
+                                                               "title":  "ValidationError"
+                                                           }
+                                   }
+                   }
+}

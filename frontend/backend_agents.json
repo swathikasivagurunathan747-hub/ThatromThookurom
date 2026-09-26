@@ -1,0 +1,297 @@
+﻿{
+    "value":  [
+                  {
+                      "agent_id":  "rs-vqa-agent",
+                      "name":  "SatQuery RS-VQA Specialist",
+                      "version":  "1.2.0",
+                      "description":  "Domain-adapted remote sensing visual question answering agent fine-tuned on BigEarthNet and RSVQA benchmarks for optical and SAR single images.",
+                      "capabilities":  [
+                                           "single_image_vqa",
+                                           "scene_captioning"
+                                       ],
+                      "input_modalities":  [
+                                               "optical",
+                                               "sar"
+                                           ],
+                      "supported_formats":  [
+                                                "geotiff",
+                                                "tiff",
+                                                "png",
+                                                "jpeg"
+                                            ],
+                      "endpoint_url":  "http://localhost:8001/v1/vqa/execute",
+                      "parameters_schema":  {
+                                                "type":  "object",
+                                                "properties":  {
+                                                                   "max_tokens":  {
+                                                                                      "type":  "integer",
+                                                                                      "default":  256,
+                                                                                      "minimum":  16,
+                                                                                      "maximum":  1024
+                                                                                  },
+                                                                   "temperature":  {
+                                                                                       "type":  "number",
+                                                                                       "default":  0.2,
+                                                                                       "minimum":  0.0,
+                                                                                       "maximum":  1.0
+                                                                                   },
+                                                                   "confidence_threshold":  {
+                                                                                                "type":  "number",
+                                                                                                "default":  0.7,
+                                                                                                "minimum":  0.0,
+                                                                                                "maximum":  1.0
+                                                                                            }
+                                                               },
+                                                "required":  [
+                                                                 "confidence_threshold"
+                                                             ]
+                                            },
+                      "metadata":  {
+                                       "training_dataset":  "BigEarthNet.txt, RSVQA",
+                                       "backbone":  "ResNet-50 + RemoteSensing-Transformer",
+                                       "spatial_resolution_m":  10,
+                                       "supported_bands":  [
+                                                               "B02",
+                                                               "B03",
+                                                               "B04",
+                                                               "B08",
+                                                               "VV",
+                                                               "VH"
+                                                           ]
+                                   },
+                      "status":  "active",
+                      "created_at":  "2026-09-16T01:07:09.278659",
+                      "updated_at":  "2026-09-16T01:07:09.278659",
+                      "last_heartbeat":  "2026-09-16T01:07:09.278659"
+                  },
+                  {
+                      "agent_id":  "rs-grounding-agent",
+                      "name":  "SatQuery Text-Guided Region Grounding Agent",
+                      "version":  "2.0.1",
+                      "description":  "Specialist agent for land-cover scene captioning and natural language object/water/building region grounding and bounding box segmentation.",
+                      "capabilities":  [
+                                           "region_grounding",
+                                           "scene_captioning"
+                                       ],
+                      "input_modalities":  [
+                                               "optical",
+                                               "sar"
+                                           ],
+                      "supported_formats":  [
+                                                "geotiff",
+                                                "tiff",
+                                                "png",
+                                                "jpeg"
+                                            ],
+                      "endpoint_url":  "http://localhost:8002/v1/grounding/execute",
+                      "parameters_schema":  {
+                                                "type":  "object",
+                                                "properties":  {
+                                                                   "target_categories":  {
+                                                                                             "type":  "array",
+                                                                                             "items":  {
+                                                                                                           "type":  "string"
+                                                                                                       },
+                                                                                             "default":  [
+                                                                                                             "water",
+                                                                                                             "built-up",
+                                                                                                             "forest",
+                                                                                                             "agriculture"
+                                                                                                         ]
+                                                                                         },
+                                                                   "output_mask_format":  {
+                                                                                              "type":  "string",
+                                                                                              "enum":  [
+                                                                                                           "geojson",
+                                                                                                           "bbox",
+                                                                                                           "mask_rle"
+                                                                                                       ],
+                                                                                              "default":  "geojson"
+                                                                                          },
+                                                                   "iou_threshold":  {
+                                                                                         "type":  "number",
+                                                                                         "default":  0.5
+                                                                                     }
+                                                               }
+                                            },
+                      "metadata":  {
+                                       "training_dataset":  "VRSBench, BigEarthNet-MM",
+                                       "backbone":  "Swin-B-GroundingDINO-RS",
+                                       "supported_classes":  [
+                                                                 "water_body",
+                                                                 "urban_structure",
+                                                                 "vegetation",
+                                                                 "bare_soil",
+                                                                 "infrastructure"
+                                                             ]
+                                   },
+                      "status":  "active",
+                      "created_at":  "2026-09-16T01:07:09.291724",
+                      "updated_at":  "2026-09-16T01:07:09.291724",
+                      "last_heartbeat":  "2026-09-16T01:07:09.291724"
+                  },
+                  {
+                      "agent_id":  "rs-change-agent",
+                      "name":  "SatQuery Bi-Temporal Change Detection \u0026 Change-VQA Agent",
+                      "version":  "1.5.0",
+                      "description":  "Multitemporal change detection agent capable of spatial change mapping, change description, and change-based VQA on bi-temporal image pairs.",
+                      "capabilities":  [
+                                           "bitemporal_change_detection",
+                                           "change_vqa"
+                                       ],
+                      "input_modalities":  [
+                                               "bitemporal_optical",
+                                               "bitemporal_sar"
+                                           ],
+                      "supported_formats":  [
+                                                "geotiff",
+                                                "tiff",
+                                                "png"
+                                            ],
+                      "endpoint_url":  "http://localhost:8003/v1/change/execute",
+                      "parameters_schema":  {
+                                                "type":  "object",
+                                                "properties":  {
+                                                                   "generate_spatial_change_map":  {
+                                                                                                       "type":  "boolean",
+                                                                                                       "default":  true
+                                                                                                   },
+                                                                   "change_sensitivity":  {
+                                                                                              "type":  "string",
+                                                                                              "enum":  [
+                                                                                                           "low",
+                                                                                                           "medium",
+                                                                                                           "high"
+                                                                                                       ],
+                                                                                              "default":  "medium"
+                                                                                          },
+                                                                   "temporal_delta_days":  {
+                                                                                               "type":  "integer",
+                                                                                               "description":  "Acquisition interval in days"
+                                                                                           }
+                                                               }
+                                            },
+                      "metadata":  {
+                                       "training_dataset":  "SECOND (Semantic Change Detection), CDVQA, S2Looking",
+                                       "backbone":  "BiTemporal-SiamUnet-VLM",
+                                       "evaluation_benchmarks":  [
+                                                                     "SECOND",
+                                                                     "CDVQA",
+                                                                     "ISRO-SAC-Multitemporal"
+                                                                 ]
+                                   },
+                      "status":  "active",
+                      "created_at":  "2026-09-16T01:07:09.300971",
+                      "updated_at":  "2026-09-16T01:07:09.300971",
+                      "last_heartbeat":  "2026-09-16T01:07:09.300971"
+                  },
+                  {
+                      "agent_id":  "rs-crossmodal-agent",
+                      "name":  "SatQuery Optical-SAR Cross-Modal Joint Analysis Agent",
+                      "version":  "1.1.0",
+                      "description":  "Cross-modal fusion specialist combining co-registered optical/multispectral spectral bands and SAR structural radar backscatter for cloud-resilient analysis.",
+                      "capabilities":  [
+                                           "cross_modal_fusion",
+                                           "single_image_vqa"
+                                       ],
+                      "input_modalities":  [
+                                               "cross_modal_optical_sar"
+                                           ],
+                      "supported_formats":  [
+                                                "geotiff",
+                                                "tiff"
+                                            ],
+                      "endpoint_url":  "http://localhost:8004/v1/crossmodal/execute",
+                      "parameters_schema":  {
+                                                "type":  "object",
+                                                "properties":  {
+                                                                   "fusion_method":  {
+                                                                                         "type":  "string",
+                                                                                         "enum":  [
+                                                                                                      "early_concat",
+                                                                                                      "cross_attention",
+                                                                                                      "feature_pyramid"
+                                                                                                  ],
+                                                                                         "default":  "cross_attention"
+                                                                                     },
+                                                                   "sar_polarization":  {
+                                                                                            "type":  "array",
+                                                                                            "items":  {
+                                                                                                          "type":  "string"
+                                                                                                      },
+                                                                                            "default":  [
+                                                                                                            "VV",
+                                                                                                            "VH"
+                                                                                                        ]
+                                                                                        },
+                                                                   "optical_cloud_masking":  {
+                                                                                                 "type":  "boolean",
+                                                                                                 "default":  true
+                                                                                             }
+                                                               }
+                                            },
+                      "metadata":  {
+                                       "training_dataset":  "BigEarthNet-MM, Cartosat-2S + RISAT SAR (ISRO/SAC Benchmark)",
+                                       "backbone":  "OpticalSAR-CrossAttn-Net",
+                                       "cloud_resilience":  true
+                                   },
+                      "status":  "active",
+                      "created_at":  "2026-09-16T01:07:09.310373",
+                      "updated_at":  "2026-09-16T01:07:09.310373",
+                      "last_heartbeat":  "2026-09-16T01:07:09.310373"
+                  },
+                  {
+                      "agent_id":  "rs-caption-agent",
+                      "name":  "SatQuery Remote Sensing Scene Description \u0026 Captioning Agent",
+                      "version":  "1.0.0",
+                      "description":  "Domain-adapted remote sensing scene captioning and land-cover description model fine-tuned on BigEarthNet-MM.",
+                      "capabilities":  [
+                                           "scene_captioning",
+                                           "single_image_vqa"
+                                       ],
+                      "input_modalities":  [
+                                               "optical",
+                                               "sar"
+                                           ],
+                      "supported_formats":  [
+                                                "geotiff",
+                                                "tiff",
+                                                "png",
+                                                "jpeg"
+                                            ],
+                      "endpoint_url":  "http://localhost:8005/v1/caption/execute",
+                      "parameters_schema":  {
+                                                "type":  "object",
+                                                "properties":  {
+                                                                   "detail_level":  {
+                                                                                        "type":  "string",
+                                                                                        "enum":  [
+                                                                                                     "brief",
+                                                                                                     "standard",
+                                                                                                     "comprehensive"
+                                                                                                 ],
+                                                                                        "default":  "comprehensive"
+                                                                                    },
+                                                                   "include_landcover_stats":  {
+                                                                                                   "type":  "boolean",
+                                                                                                   "default":  true
+                                                                                               },
+                                                                   "confidence_threshold":  {
+                                                                                                "type":  "number",
+                                                                                                "default":  0.6
+                                                                                            }
+                                                               }
+                                            },
+                      "metadata":  {
+                                       "training_dataset":  "BigEarthNet-MM, BigEarthNet.txt",
+                                       "backbone":  "RS-BLIP2-RemoteCLIP",
+                                       "spatial_resolution_m":  10
+                                   },
+                      "status":  "active",
+                      "created_at":  "2026-09-16T01:07:09.378513",
+                      "updated_at":  "2026-09-16T01:07:09.378513",
+                      "last_heartbeat":  "2026-09-16T01:07:09.378513"
+                  }
+              ],
+    "Count":  5
+}
