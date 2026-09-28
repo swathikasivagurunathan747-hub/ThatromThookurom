@@ -75,7 +75,7 @@ MOCK_SPECIALIST_AGENTS: List[Dict[str, Any]] = [
         "description": "Multitemporal change detection agent capable of spatial change mapping, change description, and change-based VQA on bi-temporal image pairs.",
         "capabilities": [AgentCapability.BITEMPORAL_CHANGE_DETECTION, AgentCapability.CHANGE_VQA],
         "input_modalities": [InputModality.BITEMPORAL_OPTICAL, InputModality.BITEMPORAL_SAR],
-        "supported_formats": [InputFormat.GEOTIFF, InputFormat.TIFF, InputFormat.PNG],
+        "supported_formats": [InputFormat.GEOTIFF, InputFormat.TIFF, InputFormat.PNG, InputFormat.JPEG],
         "endpoint_url": "http://localhost:8003/v1/change/execute",
         "parameters_schema": {
             "type": "object",
@@ -99,7 +99,7 @@ MOCK_SPECIALIST_AGENTS: List[Dict[str, Any]] = [
         "description": "Cross-modal fusion specialist combining co-registered optical/multispectral spectral bands and SAR structural radar backscatter for cloud-resilient analysis.",
         "capabilities": [AgentCapability.CROSS_MODAL_FUSION, AgentCapability.SINGLE_IMAGE_VQA],
         "input_modalities": [InputModality.CROSS_MODAL_OPTICAL_SAR],
-        "supported_formats": [InputFormat.GEOTIFF, InputFormat.TIFF],
+        "supported_formats": [InputFormat.GEOTIFF, InputFormat.TIFF, InputFormat.PNG, InputFormat.JPEG],
         "endpoint_url": "http://localhost:8004/v1/crossmodal/execute",
         "parameters_schema": {
             "type": "object",

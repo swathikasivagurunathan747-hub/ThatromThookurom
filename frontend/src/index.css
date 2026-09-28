@@ -368,7 +368,7 @@ input[type="range"].compare-slider::-moz-range-thumb {
     display: none !important;
   }
 
-  html, body, #root {
+  html, body {
     background: #ffffff !important;
     color: #111827 !important;
     overflow: visible !important;
@@ -376,34 +376,47 @@ input[type="range"].compare-slider::-moz-range-thumb {
     width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Isolate printable report: prevent dashboard/app bleeding */
+  body > #root:has(#printable-report) {
+    visibility: hidden !important;
+  }
+
+  body:has(#printable-report) #root * {
+    visibility: hidden !important;
+  }
+
+  body:has(#printable-report) #printable-report,
+  body:has(#printable-report) #printable-report * {
+    visibility: visible !important;
   }
 
   #printable-report {
     display: block !important;
-    position: static !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
     background: #ffffff !important;
     color: #111827 !important;
-    padding: 0 !important;
+    padding: 16px !important;
+    margin: 0 !important;
     box-shadow: none !important;
     border: none !important;
+    z-index: 999999 !important;
   }
 
   #printable-report * {
     color: #111827 !important;
-    border-color: #e5e7eb !important;
-  }
-
-  #printable-report .bg-white\/\[0\.03\],
-  #printable-report .bg-white\/\[0\.04\],
-  #printable-report .bg-black\/50 {
-    background: #f9fafb !important;
-    border: 1px solid #e5e7eb !important;
+    border-color: #cbd5e1 !important;
   }
 
   @page {
-    margin: 1.5cm;
+    margin: 1.2cm;
     size: A4 portrait;
   }
 }

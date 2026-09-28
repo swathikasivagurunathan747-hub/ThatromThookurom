@@ -170,14 +170,34 @@ export default function App() {
       if (!mounted) return;
       setProjects(pList);
       setChats(cList);
-      if (!activeChatId && !activeProjectId) {
-        if (cList.length > 0) {
-          setActiveChatId(cList[0].id);
+
+      const savedChatId = sessionStorage.getItem('satquery_active_chat_id');
+      const savedProjectId = sessionStorage.getItem('satquery_active_project_id');
+
+      if (savedChatId && cList.some((c) => c.id === savedChatId)) {
+        // User refreshed while on a specific query and its output or new chat
+        setActiveChatId(savedChatId);
+        const savedChat = cList.find((c) => c.id === savedChatId);
+        if (savedChat?.projectId) {
+          setActiveProjectId(savedChat.projectId);
+        }
+      } else if (savedProjectId && pList.some((p) => p.id === savedProjectId)) {
+        setActiveProjectId(savedProjectId);
+        setActiveChatId(null);
+      } else {
+        // Find existing empty chat or create a fresh new chat (do NOT force old chats with history)
+        const emptyChat = cList.find(
+          (c) => !c.projectId && (!c.interactions || c.interactions.length === 0)
+        );
+        if (emptyChat) {
+          setActiveChatId(emptyChat.id);
+          sessionStorage.setItem('satquery_active_chat_id', emptyChat.id);
         } else {
           const initChat = await createChat(undefined, 'Dashboard');
           if (mounted) {
-            setChats([initChat]);
+            setChats((prev) => [initChat, ...prev]);
             setActiveChatId(initChat.id);
+            sessionStorage.setItem('satquery_active_chat_id', initChat.id);
           }
         }
       }
@@ -186,6 +206,21 @@ export default function App() {
       mounted = false;
     };
   }, []);
+
+  // Sync active chat / project to sessionStorage for reliable refresh persistence
+  useEffect(() => {
+    if (activeChatId) {
+      sessionStorage.setItem('satquery_active_chat_id', activeChatId);
+    }
+  }, [activeChatId]);
+
+  useEffect(() => {
+    if (activeProjectId) {
+      sessionStorage.setItem('satquery_active_project_id', activeProjectId);
+    } else {
+      sessionStorage.removeItem('satquery_active_project_id');
+    }
+  }, [activeProjectId]);
 
   useEffect(() => {
     const handlePopState = () => {
@@ -295,28 +330,53 @@ export default function App() {
   const handleNavChange = (item: NavItem) => {
     setNavItem(item);
     setShowSettings(item === 'settings');
-    // When clicking direct NavRail item, return to direct workflow mode
-    setActiveChatId(null);
-    setActiveProjectId(null);
+    if (item === 'dashboard') {
+      handleOpenDashboard();
+    } else {
+      // When clicking other direct NavRail items (analyzer, compare, datasets, etc.), return to direct workflow mode
+      setActiveChatId(null);
+      setActiveProjectId(null);
+      sessionStorage.removeItem('satquery_active_chat_id');
+      sessionStorage.removeItem('satquery_active_project_id');
+    }
   };
 
   const handleOpenDashboard = async () => {
     setShowSettings(false);
     setActiveProjectId(null);
     setNavItem('dashboard');
-    if (chats.length > 0) {
-      setActiveChatId(chats[0].id);
+
+    // Find existing empty standalone chat (0 interactions)
+    const emptyChat = chats.find(
+      (c) => !c.projectId && (!c.interactions || c.interactions.length === 0)
+    );
+    if (emptyChat) {
+      setActiveChatId(emptyChat.id);
+      sessionStorage.setItem('satquery_active_chat_id', emptyChat.id);
     } else {
       const newChat = await createChat(undefined, 'Dashboard');
       await loadWorkspaceData();
       setActiveChatId(newChat.id);
+      sessionStorage.setItem('satquery_active_chat_id', newChat.id);
     }
   };
 
   const handleNewChat = async () => {
+    // If in project, look for empty chat in that project; otherwise look for empty standalone chat
+    const existingEmpty = chats.find(
+      (c) =>
+        (activeProjectId ? c.projectId === activeProjectId : !c.projectId) &&
+        (!c.interactions || c.interactions.length === 0)
+    );
+    if (existingEmpty) {
+      setActiveChatId(existingEmpty.id);
+      sessionStorage.setItem('satquery_active_chat_id', existingEmpty.id);
+      return;
+    }
     const newChat = await createChat(activeProjectId || undefined, 'Dashboard');
     await loadWorkspaceData();
     setActiveChatId(newChat.id);
+    sessionStorage.setItem('satquery_active_chat_id', newChat.id);
   };
 
   // Route: Public Read-Only Analysis Share
@@ -409,6 +469,8 @@ export default function App() {
           } else if (nav === 'analyzer') {
             setActiveChatId(null);
             setActiveProjectId(null);
+            sessionStorage.removeItem('satquery_active_chat_id');
+            sessionStorage.removeItem('satquery_active_project_id');
             setNavItem('analyze');
           }
         }}
@@ -433,11 +495,19 @@ export default function App() {
           onSelectProject={(id) => {
             setActiveProjectId(id);
             setActiveChatId(null);
+            sessionStorage.removeItem('satquery_active_chat_id');
+            sessionStorage.setItem('satquery_active_project_id', id);
           }}
           onSelectChat={(id) => {
             setActiveChatId(id);
+            sessionStorage.setItem('satquery_active_chat_id', id);
             const ch = chats.find((c) => c.id === id);
             setActiveProjectId(ch?.projectId || null);
+            if (ch?.projectId) {
+              sessionStorage.setItem('satquery_active_project_id', ch.projectId);
+            } else {
+              sessionStorage.removeItem('satquery_active_project_id');
+            }
           }}
           onNewChat={handleNewChat}
           onNewProject={() => setIsNewProjectOpen(true)}
@@ -512,6 +582,7 @@ export default function App() {
                       loadWorkspaceData();
                     }}
                     onChatUpdated={loadWorkspaceData}
+                    onNewChat={handleNewChat}
                   />
                 </div>
               </div>

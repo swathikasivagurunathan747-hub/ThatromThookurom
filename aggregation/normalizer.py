@@ -88,12 +88,18 @@ class ResultNormalizer:
         # 1. Text & VQA normalization
         vqa_answer = None
         captions = []
-        if "answer" in res_data:
+        if "answer" in res_data and res_data["answer"]:
             vqa_answer = str(res_data["answer"]).strip()
-        if "caption" in res_data:
+        if "caption" in res_data and res_data["caption"]:
             captions.append(str(res_data["caption"]).strip())
         if "captions" in res_data:
-            captions.extend([str(c).strip() for c in res_data["captions"]])
+            captions.extend([str(c).strip() for c in res_data["captions"] if c])
+        if "scene_description" in res_data and res_data["scene_description"]:
+            captions.append(str(res_data["scene_description"]).strip())
+        if "change_description" in res_data and res_data["change_description"]:
+            captions.append(str(res_data["change_description"]).strip())
+        if not vqa_answer and captions:
+            vqa_answer = captions[0]
 
         # 2. Extract Spatial Evidence
         spatial_list: List[SpatialEvidence] = []

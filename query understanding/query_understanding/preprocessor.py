@@ -141,12 +141,12 @@ class InputPreprocessor:
         elif "MULTISPECTRAL" in modality_raw:
             modality = Modality.MULTISPECTRAL
 
-        # Fallback modality from filename keywords
+        # Fallback modality from filename keywords or default to OPTICAL for standard formats
         if modality == Modality.UNKNOWN:
             fn_lower = file_name.lower()
             if any(k in fn_lower for k in ["sar", "risat", "sentinel1", "radar", "_vv_", "_vh_"]):
                 modality = Modality.SAR
-            elif any(k in fn_lower for k in ["optical", "cartosat", "sentinel2", "rgb", "msi"]):
+            else:
                 modality = Modality.OPTICAL
 
         # Sensor detection

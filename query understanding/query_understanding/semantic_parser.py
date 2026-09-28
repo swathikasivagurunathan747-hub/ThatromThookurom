@@ -29,10 +29,11 @@ class SemanticParser:
 
     # Spatial Action Intent Patterns
     SPATIAL_ACTION_PATTERNS = {
-        "describe_caption": [r'\bdescribe\b', r'\bcaption\b', r'\bsummarize\b', r'\bwhat is visible\b', r'\bobjects visible\b'],
-        "highlight_ground": [r'\bhighlight\b', r'\bsegment\b', r'\blocate\b', r'\bground\b', r'\bfind\b', r'\boutline\b', r'\bwhere is\b'],
-        "change_detect": [r'\bwhat changed\b', r'\bwhere did the change occur\b', r'\bchange between\b', r'\bdifference between\b'],
+        "describe_caption": [r'\bdescribe\b', r'\bcaption\b', r'\bsummarize\b', r'\bwhat is visible\b', r'\bobjects visible\b', r'\bwhat objects\b', r'\bdominant\b', r'\btype of\b', r'\binfrastructure\b'],
+        "highlight_ground": [r'\bhighlight\b', r'\bsegment\b', r'\blocate\b', r'\bground\b', r'\bfind\b', r'\boutline\b', r'\bwhere is\b', r'\bwhere are\b', r'\bidentify\b'],
+        "change_detect": [r'\bwhat changed\b', r'\bwhere did the change occur\b', r'\bchange between\b', r'\bdifference between\b', r'\bchanges\b', r'\bchanged\b', r'\bdifferences\b', r'\bcompare\b', r'\bunchanged\b', r'\bnoticeable change\b', r'\bbetween the two\b'],
         "change_quantify": [r'\bincreased\b', r'\bdecreased\b', r'\bremained unchanged\b', r'\bquantify change\b', r'\barea trend\b'],
+        "spatial_relation": [r'\baround\b', r'\bnear\b', r'\bnearest\b', r'\bwithin\b', r'\bproximity\b', r'\bbetween\b', r'\bsurround\b', r'\bsurrounds\b', r'\blocation\b', r'\bselected point\b'],
         "cross_modal_fuse": [r'\btogether\b', r'\bcombine\b', r'\bfusion\b', r'\boptical and sar\b', r'\bsar and optical\b', r'\bjointly\b']
     }
 

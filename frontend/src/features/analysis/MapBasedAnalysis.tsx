@@ -28,14 +28,21 @@ import { MOCK_ACTIVE_SCENE } from '../../mock/scenes';
 import { AnalysisLoadingState } from './AnalysisLoadingState';
 import { AnalysisResultView, type AnalysisResultData } from './AnalysisResultView';
 import { ReportModal } from '../reports/ReportModal';
+import { printIntelligenceReport } from '../reports/reportGenerator';
+
+const SIH_MAP_SPATIAL_QUERIES = [
+  'What features are around this location?',
+  'What buildings are within 100 meters of this location?',
+  'What is the nearest road?',
+  'What type of land cover surrounds this location?',
+  'What is located between the residential and industrial areas?',
+];
 
 const SUGGESTED_QUERIES = [
-  'What is present in this area?',
-  'What type of land use is visible?',
-  'Identify major built-up areas.',
-  'Describe the vegetation in this region.',
-  'Are there signs of urban expansion?',
-  'Identify water bodies in this area.',
+  'WHAT IS PRESENT IN THIS AREA?',
+  'WHAT TYPE OF LAND USE IS VISIBLE?',
+  'IDENTIFY MAJOR BUILT-UP AREAS.',
+  'DESCRIBE THE VEGETATION IN THIS REGION.',
 ];
 
 const LOADING_PHASES = [
@@ -47,16 +54,16 @@ const LOADING_PHASES = [
 
 const DEFAULT_PRESET_AOI: MapAreaSelection = {
   bounds: {
-    north: 28.665,
-    south: 28.585,
-    east: 77.265,
-    west: 77.165,
+    north: 13.105,
+    south: 13.06,
+    east: 80.295,
+    west: 80.245,
   },
   center: {
-    lat: 28.6139,
-    lng: 77.209,
+    lat: 13.0827,
+    lng: 80.2707,
   },
-  areaKm2: 24.6,
+  areaKm2: 4.8,
   zoomLevel: 14,
 };
 
@@ -206,6 +213,44 @@ export function MapBasedAnalysis({
     setSavedToChatSuccess(false);
   };
 
+  const handleRunDemoQuery = async (queryText: string) => {
+    setQuery(queryText);
+    const targetArea = selectedArea || DEFAULT_PRESET_AOI;
+    if (!selectedArea) {
+      setSelectedArea(DEFAULT_PRESET_AOI);
+    }
+
+    setLoading(true);
+    setError(null);
+    setResult(null);
+    setSavedToChatSuccess(false);
+
+    const interval = startLoadingAnimation();
+
+    try {
+      const res = await analyzeMapArea({
+        area: targetArea,
+        queryText,
+        selectedLocation: selectedLocation || undefined,
+        forceMock,
+      });
+
+      if (res.success && res.data) {
+        if (!onAnalysisComplete) {
+          setResult(res.data);
+        }
+        onAnalysisComplete?.(res.data);
+      } else {
+        setError(res.error || 'Map spatial analysis failed.');
+      }
+    } catch {
+      setError('Analysis service unavailable. Please check backend connection.');
+    } finally {
+      clearInterval(interval);
+      setLoading(false);
+    }
+  };
+
   const handleAnalyze = async () => {
     if (!selectedArea) {
       setError('Please select an area on the map to begin analysis.');
@@ -228,11 +273,14 @@ export function MapBasedAnalysis({
       const res = await analyzeMapArea({
         area: selectedArea,
         queryText: targetQuery,
+        selectedLocation: selectedLocation || undefined,
         forceMock,
       });
 
       if (res.success && res.data) {
-        setResult(res.data);
+        if (!onAnalysisComplete) {
+          setResult(res.data);
+        }
         onAnalysisComplete?.(res.data);
 
         // Automatically associate with project or active chat in background
@@ -549,15 +597,15 @@ export function MapBasedAnalysis({
             </div>
 
             {/* Suggested Question Chips (Active only after AOI selection) */}
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {SUGGESTED_QUERIES.slice(0, 4).map((sq) => (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {SUGGESTED_QUERIES.map((sq) => (
                 <button
                   key={sq}
                   type="button"
                   onClick={() => selectedArea && setQuery(sq)}
                   disabled={!selectedArea || loading}
                   className={`
-                    text-[11px] font-sans px-2.5 py-1 rounded-lg border transition-all text-left
+                    text-[11px] font-sans px-3 py-1.5 rounded-xl border transition-all text-left uppercase font-medium
                     ${
                       selectedArea && !loading
                         ? 'bg-white/[0.03] hover:bg-white/[0.08] text-zinc-300 hover:text-white border-white/10 hover:border-[#C29B53]/40 cursor-pointer'
@@ -650,11 +698,14 @@ export function MapBasedAnalysis({
                 final_answer: result.answer,
                 answer: result.answer,
                 confidence: result.confidence,
+                analysis_type: 'spatial',
                 areaKm2: result.area?.areaKm2 || selectedArea?.areaKm2,
                 locationName: selectedLocation?.displayName,
                 coordinatesText: result.area ? `${result.area.center.lat.toFixed(4)}°N, ${result.area.center.lng.toFixed(4)}°E` : undefined,
                 visualEvidenceUrl: result.visualEvidenceUrl,
                 detectedCategories: result.detectedCategories,
+                detected_features: result.detectedCategories,
+                evidence: result.answer,
                 changeDetected: result.detectedChanges?.map((c) => c.label).join(', '),
                 isDemoMode: result.isDemoMode,
               };
@@ -673,20 +724,18 @@ export function MapBasedAnalysis({
                 final_answer: result.answer,
                 answer: result.answer,
                 confidence: result.confidence,
+                analysis_type: 'spatial',
                 areaKm2: result.area?.areaKm2 || selectedArea?.areaKm2,
                 locationName: selectedLocation?.displayName,
                 coordinatesText: result.area ? `${result.area.center.lat.toFixed(4)}°N, ${result.area.center.lng.toFixed(4)}°E` : undefined,
                 visualEvidenceUrl: result.visualEvidenceUrl,
                 detectedCategories: result.detectedCategories,
+                detected_features: result.detectedCategories,
+                evidence: result.answer,
                 changeDetected: result.detectedChanges?.map((c) => c.label).join(', '),
                 isDemoMode: result.isDemoMode,
               };
-              if (onOpenReportModal) {
-                onOpenReportModal(rData);
-              } else {
-                setLocalReportData(rData);
-                setIsLocalReportOpen(true);
-              }
+              printIntelligenceReport(rData);
             }}
             onNewAnalysis={handleNewAnalysis}
           />

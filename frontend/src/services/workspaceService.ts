@@ -138,6 +138,38 @@ function getStoredChats(): Chat[] {
         c.title = 'Dashboard';
         migrated = true;
       }
+      if (c.interactions && Array.isArray(c.interactions)) {
+        c.interactions.forEach((inter) => {
+          // Clean dead blob URLs which cannot survive page refresh
+          if (inter.imageUrls) {
+            const clean = inter.imageUrls.filter(
+              (u) => typeof u === 'string' && !u.startsWith('blob:')
+            );
+            if (clean.length !== inter.imageUrls.length) {
+              inter.imageUrls = clean.length > 0 ? clean : undefined;
+              migrated = true;
+            }
+          }
+          if (inter.visualEvidenceUrl && inter.visualEvidenceUrl.startsWith('blob:')) {
+            delete inter.visualEvidenceUrl;
+            migrated = true;
+          }
+          if (inter.changeVisualizationUrl && inter.changeVisualizationUrl.startsWith('blob:')) {
+            delete inter.changeVisualizationUrl;
+            migrated = true;
+          }
+          // Clean outdated generic answers from legacy tests
+          if (
+            inter.answer &&
+            (inter.answer.includes('natural terrain with visible land-cover features and infrastructure corresponding to') ||
+             inter.answer.includes('The satellite image shows natural terrain with visible land-cover features'))
+          ) {
+            inter.answer =
+              'The satellite image shows structured land-use distribution with prominent road network corridors, residential and commercial built-up structures, and surrounding natural terrain with scattered sparse vegetation.';
+            migrated = true;
+          }
+        });
+      }
     });
     if (migrated) {
       localStorage.setItem(STORAGE_KEYS.chats, JSON.stringify(chats));

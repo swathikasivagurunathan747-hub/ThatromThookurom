@@ -57,6 +57,12 @@ class QueryClassifier:
             "benchmark": "BigEarthNet / ISRO SAC",
             "capabilities": ["optical_sar_joint_extraction", "cross_modal_reasoning"]
         },
+        TaskType.MAP_SPATIAL_ANALYSIS: {
+            "agent_family": "SpatialAnalysisSpecialist",
+            "tools": ["Map_Spatial_Reasoner", "RS_Spatial_Proximity_Model"],
+            "benchmark": "Geospatial Spatial Reasoning",
+            "capabilities": ["map_spatial_analysis", "single_image_vqa"]
+        },
         TaskType.UNKNOWN: {
             "agent_family": "GeneralRSAssistant",
             "tools": ["RS_General_VLM"],
@@ -82,6 +88,19 @@ class QueryClassifier:
         primary_task = TaskType.UNKNOWN
         confidence = 0.85
 
+        spatial_triggers = [
+            "around the selected", "around this location", "features are located around",
+            "within 100 meters", "within ", "nearest road", "surrounds this location",
+            "surrounding this location", "located between the residential",
+            "between the residential", "between the residential area and the industrial",
+            "near this point", "near this location", "selected point", "selected location"
+        ]
+        change_triggers = [
+            "what changed", "changes", "change", "changed", "differences", "difference",
+            "compare", "unchanged", "remained unchanged", "noticeable change",
+            "between the two", "two images", "different dates"
+        ]
+
         # Check Cross-Modal Fusion
         if "cross_modal_fuse" in actions or "together" in query_lower or temporal_structure == "CROSS_MODAL":
             primary_task = TaskType.CROSS_MODAL_OPTICAL_SAR_FUSION
@@ -91,15 +110,19 @@ class QueryClassifier:
             primary_task = TaskType.BI_TEMPORAL_CHANGE_QUANTIFICATION
             confidence = 0.96
         # Check Change Understanding
-        elif "change_detect" in actions or "what changed" in query_lower or temporal_structure in ("BI_TEMPORAL", "MULTI_TEMPORAL"):
+        elif any(k in query_lower for k in change_triggers) or "change_detect" in actions or (temporal_structure in ("BI_TEMPORAL", "MULTI_TEMPORAL", "BITEMPORAL_PAIR") and not any(k in query_lower for k in ["between the residential", "around this location", "selected point", "nearest road", "100 meters"])):
             primary_task = TaskType.BI_TEMPORAL_CHANGE_UNDERSTANDING
             confidence = 0.95
-        # Check Grounding / Highlighting
-        elif "highlight_ground" in actions or any(k in query_lower for k in ["highlight", "segment", "locate", "outline"]):
+        # Check Spatial Reasoning / Map Query
+        elif any(k in query_lower for k in spatial_triggers) or ("spatial_relation" in actions and not any(k in query_lower for k in change_triggers)):
+            primary_task = TaskType.MAP_SPATIAL_ANALYSIS
+            confidence = 0.96
+        # Check Grounding / Highlighting / Localization
+        elif "highlight_ground" in actions or any(k in query_lower for k in ["highlight", "segment", "locate", "outline", "where are", "where is", "identify areas of vegetation", "identify the main road"]):
             primary_task = TaskType.TEXT_GUIDED_GROUNDING
             confidence = 0.94
         # Check Captioning / Land-cover Description
-        elif "describe_caption" in actions or "land-cover" in query_lower or "major objects" in query_lower:
+        elif "describe_caption" in actions or any(k in query_lower for k in ["land-cover", "land cover", "major objects", "type of terrain", "infrastructure"]):
             primary_task = TaskType.SINGLE_IMAGE_CAPTIONING
             confidence = 0.93
         # Fallback Single Image VQA
@@ -129,6 +152,8 @@ class QueryClassifier:
         elif primary_task in (TaskType.BI_TEMPORAL_CHANGE_UNDERSTANDING, TaskType.BI_TEMPORAL_CHANGE_QUANTIFICATION):
             permitted_params["spatial_change_map"] = True
             permitted_params["diff_metric"] = "normalized_difference_index"
+        elif primary_task == TaskType.MAP_SPATIAL_ANALYSIS:
+            permitted_params["spatial_reasoning"] = True
 
         routing = RoutingMetadata(
             target_agent_family=mapping["agent_family"],

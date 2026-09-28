@@ -24,6 +24,7 @@ import { analyzeBiTemporalImages } from '../../services/analysisService';
 import type { BiTemporalAnalysisResult } from '../../types';
 import { AnalysisLoadingState } from './AnalysisLoadingState';
 import { ReportModal } from '../reports/ReportModal';
+import { printIntelligenceReport } from '../reports/reportGenerator';
 import type { AnalysisResultData } from './AnalysisResultView';
 import { FileText, Printer } from 'lucide-react';
 
@@ -37,12 +38,20 @@ const SUPPORTED_MIME_TYPES = [
   'image/jpx',
 ];
 
+export const SIH_BITEMPORAL_QUERIES = [
+  'What major changes occurred between the two satellite images?',
+  'Are there any significant changes to the buildings?',
+  'Has the land cover of the central open area changed?',
+  'Which major features remained unchanged?',
+  'Where is the most noticeable change located?',
+];
+
 const SUGGESTED_QUERIES = [
-  'What changed between these two images?',
-  'Has urbanization increased?',
-  'Where has vegetation decreased?',
-  'Where has construction occurred?',
-  'Identify major land-use changes.',
+  'What major changes occurred between the two satellite images?',
+  'Are there any significant changes to the buildings?',
+  'Has the land cover of the central open area changed?',
+  'Which major features remained unchanged?',
+  'Where is the most noticeable change located?',
 ];
 
 const LOADING_PHASES = [
@@ -196,6 +205,95 @@ export function BiTemporalAnalysis({ onAnalysisComplete, onOpenReportModal }: Bi
     }
   };
 
+  const handleLoadSIHDemoPair = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      setResult(null);
+
+      const [res1, res2] = await Promise.all([
+        fetch('/demo_images/bisambef1.jpeg'),
+        fetch('/demo_images/bisamaft1.jpeg'),
+      ]);
+
+      if (!res1.ok || !res2.ok) {
+        throw new Error('Demo images not accessible on public path');
+      }
+
+      const [blob1, blob2] = await Promise.all([res1.blob(), res2.blob()]);
+      const f1 = new File([blob1], 'bisambef1.jpeg', { type: 'image/jpeg' });
+      const f2 = new File([blob2], 'bisamaft1.jpeg', { type: 'image/jpeg' });
+
+      handleSelectFile1(f1);
+      handleSelectFile2(f2);
+      setDate1('T1 (Before)');
+      setDate2('T2 (After)');
+    } catch (err: any) {
+      setError(`Failed to load SIH demo pair: ${err?.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRunDemoQuery = async (queryText: string) => {
+    setQuery(queryText);
+    let f1 = file1;
+    let f2 = file2;
+
+    if (!f1 || !f2) {
+      try {
+        setLoading(true);
+        const [res1, res2] = await Promise.all([
+          fetch('/demo_images/bisambef1.jpeg'),
+          fetch('/demo_images/bisamaft1.jpeg'),
+        ]);
+        if (!res1.ok || !res2.ok) throw new Error('Demo images missing');
+        const [blob1, blob2] = await Promise.all([res1.blob(), res2.blob()]);
+        f1 = new File([blob1], 'bisambef1.jpeg', { type: 'image/jpeg' });
+        f2 = new File([blob2], 'bisamaft1.jpeg', { type: 'image/jpeg' });
+        handleSelectFile1(f1);
+        handleSelectFile2(f2);
+        setDate1('T1 (Before)');
+        setDate2('T2 (After)');
+      } catch (err: any) {
+        setError(`Failed to load demo pair: ${err?.message}`);
+        setLoading(false);
+        return;
+      }
+    }
+
+    setLoading(true);
+    setError(null);
+    setResult(null);
+
+    try {
+      const res = await analyzeBiTemporalImages({
+        image1File: f1,
+        image2File: f2,
+        queryText,
+        forceMock,
+      });
+
+      if (res.success && res.data) {
+        if (!onAnalysisComplete) {
+          setResult(res.data);
+        }
+        onAnalysisComplete?.(res.data, {
+          file1: f1,
+          file2: f2,
+          previewUrl1: previewUrl1 || undefined,
+          previewUrl2: previewUrl2 || undefined,
+        });
+      } else {
+        setError(res.error || 'Change analysis failed.');
+      }
+    } catch {
+      setError('Analysis service unavailable. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleAnalyze = async () => {
     if (!file1) {
       setError('Please upload the first satellite image.');
@@ -224,7 +322,9 @@ export function BiTemporalAnalysis({ onAnalysisComplete, onOpenReportModal }: Bi
       });
 
       if (res.success && res.data) {
-        setResult(res.data);
+        if (!onAnalysisComplete) {
+          setResult(res.data);
+        }
         onAnalysisComplete?.(res.data, {
           file1: file1 || undefined,
           file2: file2 || undefined,
@@ -352,6 +452,34 @@ export function BiTemporalAnalysis({ onAnalysisComplete, onOpenReportModal }: Bi
           </button>
         </div>
       )}
+
+      {/* ════════════════════════════════════════════════════════
+          SIH 2026 DEMO PAIR QUICK-LOADER BANNER
+      ════════════════════════════════════════════════════════ */}
+      <div className="mb-6 p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-left">
+        <div>
+          <div className="flex items-center gap-2">
+            <Sparkles size={14} className="text-[#C29B53]" />
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-white">
+              SIH 2026 Demo Temporal Pair
+            </span>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#C29B53]/20 text-[#E6C687] border border-[#C29B53]/30">
+              bisambef1.jpeg (Before) · bisamaft1.jpeg (After)
+            </span>
+          </div>
+          <p className="text-xs text-zinc-400 mt-1">
+            Residential sector (west), industrial warehouses (east), and central open land parcel.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={handleLoadSIHDemoPair}
+          className="px-4 py-2 rounded-xl text-xs font-mono font-bold uppercase tracking-wider bg-[#C29B53] hover:bg-[#CCA563] text-black transition-all cursor-pointer shadow-sm shrink-0 flex items-center gap-1.5 active:scale-95"
+        >
+          <Sparkles size={13} />
+          <span>Mount Demo Pair</span>
+        </button>
+      </div>
 
       {/* ════════════════════════════════════════════════════════
           DUAL IMAGE WORKSPACE: TWO VISUALLY EQUAL CARDS
@@ -695,20 +823,33 @@ export function BiTemporalAnalysis({ onAnalysisComplete, onOpenReportModal }: Bi
           </div>
         </div>
 
-        {/* Suggested Queries */}
-        <div className="mt-5">
-          <div className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 mb-2">
-            Suggested questions:
+        {/* SIH 2026 DEMO QUICK-QUERIES (PART 6) */}
+        <div className="mt-5 p-4 rounded-xl bg-white/[0.03] border border-white/10">
+          <div className="flex items-center justify-between mb-2.5">
+            <span className="text-[11px] font-mono uppercase tracking-wider text-[#C29B53] font-bold flex items-center gap-1.5">
+              <Sparkles size={12} />
+              <span>SIH 2026 Bi-Temporal Demo Queries (Part 6)</span>
+            </span>
+            <span className="text-[10px] font-mono text-zinc-400">Click to execute via real pipeline</span>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {SUGGESTED_QUERIES.map((sq) => (
+
+          <div className="flex flex-col gap-2">
+            {SIH_BITEMPORAL_QUERIES.map((dq, idx) => (
               <button
-                key={sq}
+                key={dq}
                 type="button"
-                onClick={() => setQuery(sq)}
-                className="text-xs font-sans px-3 py-1.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.08] text-zinc-300 hover:text-white border border-white/10 hover:border-[#C29B53]/40 transition-all cursor-pointer text-left"
+                onClick={() => handleRunDemoQuery(dq)}
+                className="text-xs font-mono px-3.5 py-2 rounded-xl bg-[#C29B53]/10 hover:bg-[#C29B53]/25 text-[#E6C687] hover:text-white border border-[#C29B53]/30 transition-all cursor-pointer text-left flex items-center justify-between group"
               >
-                {sq}
+                <span className="flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-[#C29B53]/20 text-[#C29B53] flex items-center justify-center text-[10px] font-bold">
+                    {idx + 1}
+                  </span>
+                  <span>{dq}</span>
+                </span>
+                <span className="text-[10px] uppercase tracking-wider text-zinc-500 group-hover:text-[#C29B53] font-mono shrink-0 pl-2">
+                  Run Query →
+                </span>
               </button>
             ))}
           </div>
@@ -1068,15 +1209,13 @@ export function BiTemporalAnalysis({ onAnalysisComplete, onOpenReportModal }: Bi
                     affectedArea: result.metrics?.changeAreaKm2 ? `${result.metrics.changeAreaKm2} km²` : undefined,
                     beforeImageUrl: result.beforeImageUrl || previewUrl1 || undefined,
                     afterImageUrl: result.afterImageUrl || previewUrl2 || undefined,
-                    changeVisualizationUrl: result.changeVisualizationUrl,
+                    analysis_type: 'Bi-temporal Change Detection',
+                    locationName: 'Central Elongated Parcel & Surrounds',
+                    detectedChanges: result.detectedChanges,
+                    metrics: result.metrics,
                     isDemoMode: result.isDemoMode,
                   };
-                  if (onOpenReportModal) {
-                    onOpenReportModal(rData);
-                  } else {
-                    setLocalReportData(rData);
-                    setIsLocalReportOpen(true);
-                  }
+                  printIntelligenceReport(rData);
                 }}
                 className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl text-xs font-mono font-semibold text-zinc-200 hover:text-white bg-white/[0.08] hover:bg-white/[0.15] border border-white/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               >

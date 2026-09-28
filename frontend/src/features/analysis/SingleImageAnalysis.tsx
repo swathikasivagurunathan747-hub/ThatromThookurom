@@ -22,6 +22,7 @@ import type { SingleImageAnalysisResult } from '../../types';
 import { AnalysisLoadingState } from './AnalysisLoadingState';
 import { AnalysisResultView, type AnalysisResultData } from './AnalysisResultView';
 import { ReportModal } from '../reports/ReportModal';
+import { printIntelligenceReport } from '../reports/reportGenerator';
 
 const SUPPORTED_EXTENSIONS = ['.tif', '.tiff', '.png', '.jpg', '.jpeg', '.jp2'];
 const SUPPORTED_MIME_TYPES = [
@@ -31,6 +32,69 @@ const SUPPORTED_MIME_TYPES = [
   'image/jpeg',
   'image/jp2',
   'image/jpx',
+];
+
+export const SIH_DEMO_SAMPLES = [
+  {
+    id: 'sample2',
+    name: 'Sample 2 (Image 3)',
+    filename: 'sample 2.jpeg',
+    description: 'Dry open terrain with scattered trees and shrubs',
+    tag: 'Dry Terrain & Trees',
+    queries: [
+      'What type of land cover is visible in this image?',
+      'Is the area densely vegetated or sparsely vegetated?',
+      'What are the dominant objects visible in the scene?',
+      'Identify areas of vegetation in the image.',
+    ],
+  },
+  {
+    id: 'sample3',
+    name: 'Sample 3 (Image 4)',
+    filename: 'sample 3.jpeg',
+    description: 'Paved road, building structures, bare land & vegetation',
+    tag: 'Road & Buildings',
+    queries: [
+      'What objects and land-cover types are visible in this image?',
+      'Is there a road in the image?',
+      'Where are the buildings located?',
+      'What is the dominant land cover around the buildings?',
+    ],
+  },
+  {
+    id: 'sample4',
+    name: 'Sample 4 (Image 5)',
+    filename: 'sample 4.jpeg',
+    description: 'Dry uneven terrain with unpaved dirt track',
+    tag: 'Dirt Track & Uneven Terrain',
+    queries: [
+      'What type of terrain is visible in the image?',
+      'Is there a road or track visible?',
+      'What vegetation pattern is visible?',
+      'Does the image show a densely built-up area?',
+    ],
+  },
+  {
+    id: 'sample5',
+    name: 'Sample 5 (Image 6)',
+    filename: 'sample 5.jpeg',
+    description: 'Curved paved road, exposed ground & vegetation',
+    tag: 'Curved Road & Veg',
+    queries: [
+      'What major infrastructure is visible in the image?',
+      'What surrounds the road?',
+      'Is the surrounding area densely developed?',
+      'Identify the main road and surrounding vegetation.',
+    ],
+  },
+];
+
+export const PART6_SINGLE_IMAGE_QUERIES = [
+  'What type of land cover is visible?',
+  'What objects are visible?',
+  'Is the area densely vegetated?',
+  'Identify the vegetation.',
+  'Identify the major infrastructure.',
 ];
 
 const SUGGESTED_QUERIES = [
@@ -63,6 +127,7 @@ export function SingleImageAnalysis({ onAnalysisComplete, onOpenReportModal }: S
   const [dragActive, setDragActive] = useState<boolean>(false);
   const [localReportData, setLocalReportData] = useState<AnalysisResultData | null>(null);
   const [isLocalReportOpen, setIsLocalReportOpen] = useState(false);
+  const [activeSampleId, setActiveSampleId] = useState<string | null>(null);
 
   // Query & Analysis State
   const [query, setQuery] = useState<string>('');
@@ -158,6 +223,78 @@ export function SingleImageAnalysis({ onAnalysisComplete, onOpenReportModal }: S
     }
   };
 
+  const handleLoadDemoSample = async (sample: (typeof SIH_DEMO_SAMPLES)[0]) => {
+    setActiveSampleId(sample.id);
+    setError(null);
+    setResult(null);
+    try {
+      setLoading(true);
+      const res = await fetch(`/demo_images/${encodeURIComponent(sample.filename)}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      const demoFile = new File([blob], sample.filename, { type: 'image/jpeg' });
+      handleSelectFile(demoFile);
+    } catch (err: any) {
+      setError(`Failed to load demo image (${sample.name}): ${err?.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRunDemoQuery = async (queryText: string, specificSample?: (typeof SIH_DEMO_SAMPLES)[0]) => {
+    setQuery(queryText);
+    let targetFile = file;
+
+    if (specificSample && (!file || file.name !== specificSample.filename)) {
+      setActiveSampleId(specificSample.id);
+      try {
+        setLoading(true);
+        const res = await fetch(`/demo_images/${encodeURIComponent(specificSample.filename)}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const blob = await res.blob();
+        targetFile = new File([blob], specificSample.filename, { type: 'image/jpeg' });
+        handleSelectFile(targetFile);
+      } catch (err: any) {
+        setError(`Failed to load demo image: ${err?.message}`);
+        setLoading(false);
+        return;
+      }
+    }
+
+    if (!targetFile) {
+      setError('Please select or upload a demo image first.');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setResult(null);
+
+    try {
+      const res = await analyzeSingleImage({
+        imageFile: targetFile,
+        queryText,
+        forceMock,
+      });
+
+      if (res.success && res.data) {
+        if (!onAnalysisComplete) {
+          setResult(res.data);
+        }
+        onAnalysisComplete?.(res.data, {
+          file: targetFile,
+          previewUrl: previewUrl || undefined,
+        });
+      } else {
+        setError(res.error || 'Analysis failed.');
+      }
+    } catch {
+      setError('Analysis service unavailable. Please check backend connection.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleAnalyze = async () => {
     if (!file) {
       setError('Please upload a supported image.');
@@ -181,7 +318,9 @@ export function SingleImageAnalysis({ onAnalysisComplete, onOpenReportModal }: S
       });
 
       if (res.success && res.data) {
-        setResult(res.data);
+        if (!onAnalysisComplete) {
+          setResult(res.data);
+        }
         onAnalysisComplete?.(res.data, {
           file: file || undefined,
           previewUrl: previewUrl || undefined,
@@ -289,6 +428,47 @@ export function SingleImageAnalysis({ onAnalysisComplete, onOpenReportModal }: S
           </button>
         </div>
       )}
+
+      {/* ════════════════════════════════════════════════════════
+          SIH 2026 DEMO IMAGES SELECTOR
+      ════════════════════════════════════════════════════════ */}
+      <div className="mb-6 p-4 rounded-2xl bg-white/[0.03] border border-white/10 text-left">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Sparkles size={14} className="text-[#C29B53]" />
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-white">
+              SIH 2026 Demo Imagery (1-Click Load)
+            </span>
+          </div>
+          <span className="text-[10px] font-mono text-zinc-400">Click to instantly mount image</span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          {SIH_DEMO_SAMPLES.map((sample) => (
+            <button
+              key={sample.id}
+              type="button"
+              onClick={() => handleLoadDemoSample(sample)}
+              className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                activeSampleId === sample.id || (file && file.name === sample.filename)
+                  ? 'bg-[#C29B53]/15 border-[#C29B53] text-white shadow-sm'
+                  : 'bg-white/[0.02] border-white/10 hover:border-[#C29B53]/50 text-zinc-300 hover:text-white'
+              }`}
+            >
+              <div>
+                <span className="text-[10px] font-mono font-bold text-[#C29B53] block">
+                  {sample.tag}
+                </span>
+                <span className="text-xs font-semibold block mt-0.5 truncate">
+                  {sample.name}
+                </span>
+              </div>
+              <span className="text-[10px] text-zinc-400 mt-1 line-clamp-1">
+                {sample.description}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* ════════════════════════════════════════════════════════
           WORKFLOW STEP: IMAGE UPLOAD OR PREVIEW
@@ -453,23 +633,54 @@ export function SingleImageAnalysis({ onAnalysisComplete, onOpenReportModal }: S
           </div>
         </div>
 
-        {/* Suggested Queries */}
-        <div className="mt-5">
-          <div className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 mb-2">
-            Suggested questions:
+        {/* SIH 2026 DEMO QUICK-QUERIES (PART 6) */}
+        <div className="mt-5 p-4 rounded-xl bg-white/[0.03] border border-white/10">
+          <div className="flex items-center justify-between mb-2.5">
+            <span className="text-[11px] font-mono uppercase tracking-wider text-[#C29B53] font-bold flex items-center gap-1.5">
+              <Sparkles size={12} />
+              <span>SIH 2026 Demo Quick-Queries (Part 6)</span>
+            </span>
+            <span className="text-[10px] font-mono text-zinc-400">Click to execute via real pipeline</span>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {SUGGESTED_QUERIES.map((sq) => (
+
+          <div className="flex flex-wrap gap-2 mb-3">
+            {PART6_SINGLE_IMAGE_QUERIES.map((dq) => (
               <button
-                key={sq}
+                key={dq}
                 type="button"
-                onClick={() => setQuery(sq)}
-                className="text-xs font-sans px-3 py-1.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.08] text-zinc-300 hover:text-white border border-white/10 hover:border-[#C29B53]/40 transition-all cursor-pointer text-left"
+                onClick={() => handleRunDemoQuery(dq)}
+                className="text-xs font-mono px-3 py-1.5 rounded-lg bg-[#C29B53]/10 hover:bg-[#C29B53]/25 text-[#E6C687] hover:text-white border border-[#C29B53]/30 transition-all cursor-pointer text-left"
               >
-                {sq}
+                {dq}
               </button>
             ))}
           </div>
+
+          {/* Active Sample-Specific Benchmark Queries */}
+          {(() => {
+            const currentSample = SIH_DEMO_SAMPLES.find(
+              (s) => s.id === activeSampleId || (file && file.name === s.filename)
+            ) || SIH_DEMO_SAMPLES[0];
+            return (
+              <div className="pt-2.5 border-t border-white/10">
+                <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider block mb-2">
+                  Sample-Specific Benchmark Queries ({currentSample.name}):
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {currentSample.queries.map((sq) => (
+                    <button
+                      key={sq}
+                      type="button"
+                      onClick={() => handleRunDemoQuery(sq, currentSample)}
+                      className="text-xs font-sans px-3 py-1.5 rounded-lg bg-white/[0.05] hover:bg-white/[0.12] text-zinc-200 hover:text-white border border-white/15 hover:border-[#C29B53]/50 transition-all cursor-pointer text-left"
+                    >
+                      {sq}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Primary ANALYZE Button */}
@@ -541,8 +752,11 @@ export function SingleImageAnalysis({ onAnalysisComplete, onOpenReportModal }: S
                 final_answer: result.answer,
                 answer: result.answer,
                 confidence: result.confidence,
+                analysis_type: 'single_image',
                 visualEvidenceUrl: result.visualEvidenceUrl || previewUrl || undefined,
                 detectedCategories: result.detectedCategories,
+                detected_features: result.detectedCategories,
+                evidence: result.answer,
                 isDemoMode: result.isDemoMode,
               };
               if (onOpenReportModal) {
@@ -560,16 +774,14 @@ export function SingleImageAnalysis({ onAnalysisComplete, onOpenReportModal }: S
                 final_answer: result.answer,
                 answer: result.answer,
                 confidence: result.confidence,
+                analysis_type: 'single_image',
                 visualEvidenceUrl: result.visualEvidenceUrl || previewUrl || undefined,
                 detectedCategories: result.detectedCategories,
+                detected_features: result.detectedCategories,
+                evidence: result.answer,
                 isDemoMode: result.isDemoMode,
               };
-              if (onOpenReportModal) {
-                onOpenReportModal(rData);
-              } else {
-                setLocalReportData(rData);
-                setIsLocalReportOpen(true);
-              }
+              printIntelligenceReport(rData);
             }}
             onNewAnalysis={handleNewAnalysis}
           />

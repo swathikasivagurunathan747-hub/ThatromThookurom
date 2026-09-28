@@ -50,7 +50,10 @@ class RequestValidator:
 
                 for req_key in required:
                     if req_key not in request.parameters:
-                        errors.append(f"Missing required parameter '{req_key}' for agent {request.agent_id}.")
+                        if req_key in props and isinstance(props[req_key], dict) and "default" in props[req_key]:
+                            request.parameters[req_key] = props[req_key]["default"]
+                        else:
+                            errors.append(f"Missing required parameter '{req_key}' for agent {request.agent_id}.")
 
                 for key, val in request.parameters.items():
                     if key in props:

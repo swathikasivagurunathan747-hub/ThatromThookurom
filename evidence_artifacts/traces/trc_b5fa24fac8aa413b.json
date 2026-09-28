@@ -1,0 +1,285 @@
+{
+  "trace_id": "trc_b5fa24fac8aa413b",
+  "request_id": "Q_4fa8580d",
+  "created_at": 1790533430.9510555,
+  "updated_at": 1790533430.9553587,
+  "iso_created_at": "2026-09-27T18:23:50.951056+00:00",
+  "query": "What major changes occurred between the two satellite images?",
+  "image_inputs": [
+    {
+      "image_id": null,
+      "file_name": "bisambef1.jpeg",
+      "format": "JPEG",
+      "modality": "BITEMPORAL_OPTICAL",
+      "sensor_type": null,
+      "timestamp": null,
+      "bounds": null,
+      "is_co_registered": null
+    },
+    {
+      "image_id": null,
+      "file_name": "bisamaft1.jpeg",
+      "format": "JPEG",
+      "modality": "BITEMPORAL_OPTICAL",
+      "sensor_type": null,
+      "timestamp": null,
+      "bounds": null,
+      "is_co_registered": null
+    }
+  ],
+  "query_understanding": {},
+  "router_decision": {
+    "plan_id": "plan_547f6b16",
+    "query_id": "qo_e6005a2b",
+    "routing_status": "failed",
+    "requirements": {
+      "query_id": "qo_e6005a2b",
+      "resolved_query": "What major changes occurred between the two satellite images?",
+      "primary_capability": "single_image_vqa",
+      "secondary_capabilities": [
+        "region_grounding"
+      ],
+      "required_modality": "bitemporal_optical",
+      "supported_formats": [
+        "jpeg"
+      ],
+      "benchmark_reference": "Geospatial Spatial Reasoning",
+      "target_classes": [],
+      "image_count": 2,
+      "temporal_structure": "BITEMPORAL_PAIR",
+      "max_acceptable_latency_ms": 2500,
+      "requires_cloud_resilience": false,
+      "requires_gpu": false
+    },
+    "candidate_evaluations": [
+      {
+        "agent_id": "rs-vqa-agent",
+        "name": "SatQuery RS-VQA Specialist",
+        "capability_score": 0.0,
+        "modality_score": 0.0,
+        "adaptation_score": 0.0,
+        "latency_score": 0.0,
+        "health_score": 0.0,
+        "composite_score": 0.0,
+        "rejection_reason": "Modality mismatch: agent supports ['optical', 'sar'], requires 'bitemporal_optical'."
+      },
+      {
+        "agent_id": "rs-grounding-agent",
+        "name": "SatQuery Text-Guided Region Grounding Agent",
+        "capability_score": 0.0,
+        "modality_score": 0.0,
+        "adaptation_score": 0.0,
+        "latency_score": 0.0,
+        "health_score": 0.0,
+        "composite_score": 0.0,
+        "rejection_reason": "Modality mismatch: agent supports ['optical', 'sar'], requires 'bitemporal_optical'."
+      },
+      {
+        "agent_id": "rs-change-agent",
+        "name": "SatQuery Bi-Temporal Change Detection & Change-VQA Agent",
+        "capability_score": 0.0,
+        "modality_score": 0.0,
+        "adaptation_score": 0.0,
+        "latency_score": 0.0,
+        "health_score": 0.0,
+        "composite_score": 0.0,
+        "rejection_reason": "Capability mismatch: agent has ['bitemporal_change_detection', 'change_vqa'], needs 'single_image_vqa'."
+      },
+      {
+        "agent_id": "rs-crossmodal-agent",
+        "name": "SatQuery Optical-SAR Cross-Modal Joint Analysis Agent",
+        "capability_score": 0.0,
+        "modality_score": 0.0,
+        "adaptation_score": 0.0,
+        "latency_score": 0.0,
+        "health_score": 0.0,
+        "composite_score": 0.0,
+        "rejection_reason": "Modality mismatch: agent supports ['cross_modal_optical_sar'], requires 'bitemporal_optical'."
+      },
+      {
+        "agent_id": "rs-caption-agent",
+        "name": "SatQuery Remote Sensing Scene Description & Captioning Agent",
+        "capability_score": 0.0,
+        "modality_score": 0.0,
+        "adaptation_score": 0.0,
+        "latency_score": 0.0,
+        "health_score": 0.0,
+        "composite_score": 0.0,
+        "rejection_reason": "Modality mismatch: agent supports ['optical', 'sar'], requires 'bitemporal_optical'."
+      },
+      {
+        "agent_id": "rs-test-agent-d59ff9",
+        "name": "Custom Test Agent",
+        "capability_score": 0.0,
+        "modality_score": 0.0,
+        "adaptation_score": 0.0,
+        "latency_score": 0.0,
+        "health_score": 0.0,
+        "composite_score": 0.0,
+        "rejection_reason": "Modality mismatch: agent supports ['optical'], requires 'bitemporal_optical'."
+      }
+    ],
+    "selected_agent_id": null,
+    "steps": [],
+    "fallback_routes": [],
+    "auditable_summary": null,
+    "router_trace": [
+      {
+        "timestamp": "2026-09-27T18:23:50.953256+00:00",
+        "stage": "STEP_1_RECEIVE",
+        "action": "Receive Query Plan",
+        "status": "SUCCESS",
+        "details": {
+          "query_id": "qo_e6005a2b",
+          "raw_query": "What major changes occurred between the two satellite images?"
+        }
+      },
+      {
+        "timestamp": "2026-09-27T18:23:50.953267+00:00",
+        "stage": "STEP_2_VALIDATE",
+        "action": "Validate Query Plan",
+        "status": "SUCCESS",
+        "details": {
+          "validation_status": "PASSED"
+        }
+      },
+      {
+        "timestamp": "2026-09-27T18:23:50.953324+00:00",
+        "stage": "STEP_3_4_REQUIREMENTS",
+        "action": "Extract Requirements & Capabilities",
+        "status": "SUCCESS",
+        "details": {
+          "primary_capability": "single_image_vqa",
+          "required_modality": "bitemporal_optical",
+          "temporal_structure": "BITEMPORAL_PAIR",
+          "benchmark_reference": "Geospatial Spatial Reasoning",
+          "target_classes": []
+        }
+      },
+      {
+        "timestamp": "2026-09-27T18:23:50.955087+00:00",
+        "stage": "STEP_5_6_DISCOVERY",
+        "action": "Query Registry & Retrieve Candidates",
+        "status": "SUCCESS",
+        "details": {
+          "candidate_count": 6,
+          "candidate_ids": [
+            "rs-vqa-agent",
+            "rs-grounding-agent",
+            "rs-change-agent",
+            "rs-crossmodal-agent",
+            "rs-caption-agent",
+            "rs-test-agent-d59ff9"
+          ]
+        }
+      },
+      {
+        "timestamp": "2026-09-27T18:23:50.955168+00:00",
+        "stage": "STEP_7_FILTER",
+        "action": "Filter Candidates",
+        "status": "SUCCESS",
+        "details": {
+          "qualified_count": 0,
+          "qualified_ids": [],
+          "disqualified_count": 6,
+          "disqualified_reasons": {
+            "rs-vqa-agent": "Modality mismatch: agent supports ['optical', 'sar'], requires 'bitemporal_optical'.",
+            "rs-grounding-agent": "Modality mismatch: agent supports ['optical', 'sar'], requires 'bitemporal_optical'.",
+            "rs-change-agent": "Capability mismatch: agent has ['bitemporal_change_detection', 'change_vqa'], needs 'single_image_vqa'.",
+            "rs-crossmodal-agent": "Modality mismatch: agent supports ['cross_modal_optical_sar'], requires 'bitemporal_optical'.",
+            "rs-caption-agent": "Modality mismatch: agent supports ['optical', 'sar'], requires 'bitemporal_optical'.",
+            "rs-test-agent-d59ff9": "Modality mismatch: agent supports ['optical'], requires 'bitemporal_optical'."
+          }
+        }
+      },
+      {
+        "timestamp": "2026-09-27T18:23:50.955181+00:00",
+        "stage": "STEP_8_SCORE",
+        "action": "Score and Rank Candidates",
+        "status": "SUCCESS",
+        "details": {
+          "ranked_scores": []
+        }
+      },
+      {
+        "timestamp": "2026-09-27T18:23:50.955229+00:00",
+        "stage": "STEP_12_PLAN_GENERATED",
+        "action": "Generate Execution Plan",
+        "status": "SUCCESS",
+        "details": {
+          "plan_id": "plan_547f6b16",
+          "selected_agent": null,
+          "steps_count": 0,
+          "fallback_count": 0
+        }
+      }
+    ],
+    "rejection_errors": [
+      "No registered specialist agents matched the requirements."
+    ]
+  },
+  "selected_agents": [],
+  "spans": [],
+  "events": [
+    {
+      "event_id": "evt_spn_9f20c4ed9bbe",
+      "timestamp": 1790533430.9510555,
+      "iso_timestamp": "2026-09-27T18:23:50.951146+00:00",
+      "event_type": "trace_started",
+      "component": "trace_service",
+      "status": "success",
+      "message": "Trace trc_b5fa24fac8aa413b started for Request Q_4fa8580d",
+      "payload": {
+        "query": "What major changes occurred between the two satellite images?",
+        "image_count": 2
+      }
+    },
+    {
+      "event_id": "evt_spn_e82250be1b07",
+      "timestamp": 1790533430.9531722,
+      "iso_timestamp": "2026-09-27T18:23:50.953212+00:00",
+      "event_type": "query_understanding_completed",
+      "component": "query_understanding",
+      "status": "success",
+      "message": "Query understanding completed successfully",
+      "payload": {
+        "tasks": [],
+        "modalities": []
+      }
+    },
+    {
+      "event_id": "evt_spn_f0e09a02f30d",
+      "timestamp": 1790533430.9552453,
+      "iso_timestamp": "2026-09-27T18:23:50.955345+00:00",
+      "event_type": "router_decision_completed",
+      "component": "router",
+      "status": "success",
+      "message": "Router selected 0 agent(s)",
+      "payload": {
+        "selected_agent_ids": []
+      }
+    },
+    {
+      "event_id": "evt_spn_8d8801192c2b",
+      "timestamp": 1790533430.9553587,
+      "iso_timestamp": "2026-09-27T18:23:50.955404+00:00",
+      "event_type": "trace_finalized",
+      "component": "trace_service",
+      "status": "success",
+      "message": "Trace trc_b5fa24fac8aa413b finalized with status SUCCESS",
+      "payload": {
+        "total_duration_ms": 4.3,
+        "final_status": "SUCCESS"
+      }
+    }
+  ],
+  "total_duration_ms": 4.3,
+  "status": "SUCCESS",
+  "metrics": {
+    "session_id": "a5cf63d9-addb-4833-b43a-4caf095f00f9",
+    "span_count": 0,
+    "successful_spans": 0,
+    "failed_spans": 0,
+    "fallback_spans": 0
+  }
+}

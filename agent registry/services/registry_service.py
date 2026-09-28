@@ -209,7 +209,7 @@ class AgentRegistryService:
     @classmethod
     def seed_mock_agents(cls, db: Session) -> List[AgentModel]:
         """
-        Step 2: Seed database with standard mock specialist agents if missing.
+        Step 2: Seed database with standard mock specialist agents if missing, or update if existing.
         """
         seeded = []
         for req in get_mock_agent_requests():
@@ -218,5 +218,11 @@ class AgentRegistryService:
                 seeded.append(agent)
             except AgentAlreadyExistsError:
                 agent = cls.get_agent_by_id(db, req.agent_id)
+                # Synchronize supported_formats, capabilities, modalities
+                agent.supported_formats = [f.value if hasattr(f, "value") else str(f) for f in req.supported_formats]
+                agent.capabilities = [c.value if hasattr(c, "value") else str(c) for c in req.capabilities]
+                agent.input_modalities = [m.value if hasattr(m, "value") else str(m) for m in req.input_modalities]
+                db.commit()
+                db.refresh(agent)
                 seeded.append(agent)
         return seeded

@@ -200,11 +200,12 @@ export function WorkspaceSidebar({
                             <span className="truncate">{proj.name}</span>
                             {((proj.collaborators && proj.collaborators.length > 0) ||
                               proj.shareConfig?.isPublic) && (
-                              <Users
-                                size={11}
-                                className="shrink-0 text-[#C29B53] opacity-80"
-                                title="Shared or Collaborative Project"
-                              />
+                              <span title="Shared or Collaborative Project" className="inline-flex shrink-0">
+                                <Users
+                                  size={11}
+                                  className="text-[#C29B53] opacity-80"
+                                />
+                              </span>
                             )}
                           </div>
                           <div className="text-[9px] font-mono text-zinc-500 flex items-center gap-1">

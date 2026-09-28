@@ -1,0 +1,34 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+      [
+        [
+          0.35,
+          0.12
+        ],
+        [
+          0.65,
+          0.12
+        ],
+        [
+          0.65,
+          0.88
+        ],
+        [
+          0.35,
+          0.88
+        ],
+        [
+          0.35,
+          0.12
+        ]
+      ]
+    ]
+  },
+  "properties": {
+    "entity": "central_open_parcel",
+    "status": "modified_surface"
+  }
+}

@@ -41,9 +41,16 @@ class PlanBuilder:
         configured = {}
         schema = agent.parameters_schema or {}
 
-        # Default values from schema
-        for param, default_val in schema.items():
-            configured[param] = default_val
+        # Default values from schema (handles both standard JSON Schema and flat dict)
+        if isinstance(schema, dict) and "properties" in schema and isinstance(schema["properties"], dict):
+            for param, prop_spec in schema["properties"].items():
+                if isinstance(prop_spec, dict) and "default" in prop_spec:
+                    configured[param] = prop_spec["default"]
+                elif not isinstance(prop_spec, dict):
+                    configured[param] = prop_spec
+        elif isinstance(schema, dict):
+            for param, default_val in schema.items():
+                configured[param] = default_val
 
         # Context-dependent parameter overrides
         if req.target_classes and "output_masks" in schema:

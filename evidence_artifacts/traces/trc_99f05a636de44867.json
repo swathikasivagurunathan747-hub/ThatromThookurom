@@ -1,0 +1,454 @@
+{
+  "trace_id": "trc_99f05a636de44867",
+  "request_id": "Q_cc7d5ce8",
+  "created_at": 1790559347.899388,
+  "updated_at": 1790559347.9107363,
+  "iso_created_at": "2026-09-28T01:35:47.899388+00:00",
+  "query": "Describe what is visible in this satellite image.",
+  "image_inputs": [
+    {
+      "image_id": "img_ec22868f",
+      "file_name": "sample 2.jpeg",
+      "format": "JPEG",
+      "modality": "OPTICAL",
+      "sensor_type": "Sentinel-2",
+      "timestamp": null,
+      "bounds": null,
+      "is_co_registered": null
+    }
+  ],
+  "query_understanding": {},
+  "router_decision": {
+    "plan_id": "plan_39d1cdca",
+    "query_id": "qo_14cce1b3",
+    "routing_status": "success",
+    "requirements": {
+      "query_id": "qo_14cce1b3",
+      "resolved_query": "Describe what is visible in this satellite image.",
+      "primary_capability": "scene_captioning",
+      "secondary_capabilities": [
+        "single_image_vqa"
+      ],
+      "required_modality": "optical",
+      "supported_formats": [
+        "jpeg"
+      ],
+      "benchmark_reference": "VRSBench / RSVQA",
+      "target_classes": [],
+      "image_count": 1,
+      "temporal_structure": "SINGLE_IMAGE",
+      "max_acceptable_latency_ms": 2500,
+      "requires_cloud_resilience": false,
+      "requires_gpu": false
+    },
+    "candidate_evaluations": [
+      {
+        "agent_id": "rs-vqa-agent",
+        "name": "SatQuery RS-VQA Specialist",
+        "capability_score": 1.0,
+        "modality_score": 1.0,
+        "adaptation_score": 1.0,
+        "latency_score": 0.98,
+        "health_score": 1.0,
+        "composite_score": 0.998,
+        "rejection_reason": null
+      },
+      {
+        "agent_id": "rs-grounding-agent",
+        "name": "SatQuery Text-Guided Region Grounding Agent",
+        "capability_score": 1.0,
+        "modality_score": 1.0,
+        "adaptation_score": 1.0,
+        "latency_score": 0.98,
+        "health_score": 1.0,
+        "composite_score": 0.998,
+        "rejection_reason": null
+      },
+      {
+        "agent_id": "rs-caption-agent",
+        "name": "SatQuery Remote Sensing Scene Description & Captioning Agent",
+        "capability_score": 1.0,
+        "modality_score": 1.0,
+        "adaptation_score": 1.0,
+        "latency_score": 0.98,
+        "health_score": 1.0,
+        "composite_score": 0.998,
+        "rejection_reason": null
+      }
+    ],
+    "selected_agent_id": "rs-vqa-agent",
+    "steps": [
+      {
+        "step_id": "plan_39d1cdca_prep",
+        "step_type": "preprocessing",
+        "agent_id": "system_preprocessor",
+        "agent_name": "Geospatial Input Preprocessor & Validator",
+        "endpoint_url": "internal://preprocessor",
+        "inputs": [
+          {
+            "image_id": "img_ec22868f",
+            "file_name": "sample 2.jpeg",
+            "format": "JPEG",
+            "modality": "OPTICAL",
+            "sensor_type": "Sentinel-2",
+            "timestamp": null,
+            "spatial_bounds": null,
+            "resolution_m": null,
+            "is_co_registered": null
+          }
+        ],
+        "parameters": {
+          "image_count": 1,
+          "temporal_structure": "SINGLE_IMAGE",
+          "verify_geospatial_bounds": true,
+          "normalize_bands": true
+        },
+        "timeout_seconds": 10.0,
+        "depends_on": []
+      },
+      {
+        "step_id": "plan_39d1cdca_infer",
+        "step_type": "specialist_inference",
+        "agent_id": "rs-vqa-agent",
+        "agent_name": "SatQuery RS-VQA Specialist",
+        "endpoint_url": "http://localhost:8001/v1/vqa/execute",
+        "inputs": [
+          {
+            "depends_on_step": "plan_39d1cdca_prep"
+          }
+        ],
+        "parameters": {
+          "max_tokens": 256,
+          "temperature": 0.2,
+          "confidence_threshold": 0.7
+        },
+        "timeout_seconds": 30.0,
+        "depends_on": [
+          "plan_39d1cdca_prep"
+        ]
+      },
+      {
+        "step_id": "plan_39d1cdca_post",
+        "step_type": "evidence_grounding",
+        "agent_id": "system_grounder",
+        "agent_name": "Evidence Grounding & Spatial Summarizer",
+        "endpoint_url": "internal://evidence_grounder",
+        "inputs": [
+          {
+            "depends_on_step": "plan_39d1cdca_infer"
+          }
+        ],
+        "parameters": {
+          "target_classes": [],
+          "generate_visual_evidence": true,
+          "calculate_confidence": true
+        },
+        "timeout_seconds": 15.0,
+        "depends_on": [
+          "plan_39d1cdca_infer"
+        ]
+      }
+    ],
+    "fallback_routes": [
+      {
+        "primary_agent_id": "rs-vqa-agent",
+        "fallback_agent_id": "rs-grounding-agent",
+        "trigger_condition": "on_failure_or_timeout_or_5xx",
+        "fallback_endpoint_url": "http://localhost:8002/v1/grounding/execute",
+        "fallback_parameters": {
+          "target_categories": [
+            "water",
+            "built-up",
+            "forest",
+            "agriculture"
+          ],
+          "output_mask_format": "geojson",
+          "iou_threshold": 0.5
+        }
+      }
+    ],
+    "auditable_summary": {
+      "query_id": "qo_14cce1b3",
+      "selected_task": "scene_captioning",
+      "primary_agent_id": "rs-vqa-agent",
+      "primary_agent_name": "SatQuery RS-VQA Specialist",
+      "models_and_tools": [
+        "Geospatial Input Preprocessor & Validator",
+        "SatQuery RS-VQA Specialist",
+        "Evidence Grounding & Spatial Summarizer"
+      ],
+      "applied_parameters": {
+        "max_tokens": 256,
+        "temperature": 0.2,
+        "confidence_threshold": 0.7
+      },
+      "benchmark_dataset": "VRSBench / RSVQA",
+      "input_configuration": {
+        "image_count": 1,
+        "modality": "optical",
+        "temporal_structure": "SINGLE_IMAGE",
+        "formats": [
+          "jpeg"
+        ]
+      },
+      "routing_confidence": 0.998,
+      "fallback_assigned": "SatQuery Text-Guided Region Grounding Agent (rs-grounding-agent)"
+    },
+    "router_trace": [
+      {
+        "timestamp": "2026-09-28T01:35:47.905531+00:00",
+        "stage": "STEP_1_RECEIVE",
+        "action": "Receive Query Plan",
+        "status": "SUCCESS",
+        "details": {
+          "query_id": "qo_14cce1b3",
+          "raw_query": "Describe what is visible in this satellite image."
+        }
+      },
+      {
+        "timestamp": "2026-09-28T01:35:47.905547+00:00",
+        "stage": "STEP_2_VALIDATE",
+        "action": "Validate Query Plan",
+        "status": "SUCCESS",
+        "details": {
+          "validation_status": "PASSED"
+        }
+      },
+      {
+        "timestamp": "2026-09-28T01:35:47.905666+00:00",
+        "stage": "STEP_3_4_REQUIREMENTS",
+        "action": "Extract Requirements & Capabilities",
+        "status": "SUCCESS",
+        "details": {
+          "primary_capability": "scene_captioning",
+          "required_modality": "optical",
+          "temporal_structure": "SINGLE_IMAGE",
+          "benchmark_reference": "VRSBench / RSVQA",
+          "target_classes": []
+        }
+      },
+      {
+        "timestamp": "2026-09-28T01:35:47.906991+00:00",
+        "stage": "STEP_5_6_DISCOVERY",
+        "action": "Query Registry & Retrieve Candidates",
+        "status": "SUCCESS",
+        "details": {
+          "candidate_count": 3,
+          "candidate_ids": [
+            "rs-vqa-agent",
+            "rs-grounding-agent",
+            "rs-caption-agent"
+          ]
+        }
+      },
+      {
+        "timestamp": "2026-09-28T01:35:47.907047+00:00",
+        "stage": "STEP_7_FILTER",
+        "action": "Filter Candidates",
+        "status": "SUCCESS",
+        "details": {
+          "qualified_count": 3,
+          "qualified_ids": [
+            "rs-vqa-agent",
+            "rs-grounding-agent",
+            "rs-caption-agent"
+          ],
+          "disqualified_count": 0,
+          "disqualified_reasons": {}
+        }
+      },
+      {
+        "timestamp": "2026-09-28T01:35:47.907989+00:00",
+        "stage": "STEP_8_SCORE",
+        "action": "Score and Rank Candidates",
+        "status": "SUCCESS",
+        "details": {
+          "ranked_scores": [
+            {
+              "agent_id": "rs-vqa-agent",
+              "composite": 0.998,
+              "capability": 1.0,
+              "adaptation": 1.0,
+              "modality": 1.0
+            },
+            {
+              "agent_id": "rs-grounding-agent",
+              "composite": 0.998,
+              "capability": 1.0,
+              "adaptation": 1.0,
+              "modality": 1.0
+            },
+            {
+              "agent_id": "rs-caption-agent",
+              "composite": 0.998,
+              "capability": 1.0,
+              "adaptation": 1.0,
+              "modality": 1.0
+            }
+          ]
+        }
+      },
+      {
+        "timestamp": "2026-09-28T01:35:47.908252+00:00",
+        "stage": "STEP_12_PLAN_GENERATED",
+        "action": "Generate Execution Plan",
+        "status": "SUCCESS",
+        "details": {
+          "plan_id": "plan_39d1cdca",
+          "selected_agent": "rs-vqa-agent",
+          "steps_count": 3,
+          "fallback_count": 1
+        }
+      }
+    ],
+    "rejection_errors": []
+  },
+  "selected_agents": [
+    {
+      "step_id": "plan_39d1cdca_prep",
+      "agent_id": "system_preprocessor",
+      "agent_name": "Geospatial Input Preprocessor & Validator",
+      "agent_version": "1.0.0",
+      "capability": "preprocessing",
+      "parameters": {
+        "image_count": 1,
+        "temporal_structure": "SINGLE_IMAGE",
+        "verify_geospatial_bounds": true,
+        "normalize_bands": true
+      }
+    },
+    {
+      "step_id": "plan_39d1cdca_infer",
+      "agent_id": "rs-vqa-agent",
+      "agent_name": "SatQuery RS-VQA Specialist",
+      "agent_version": "1.0.0",
+      "capability": "specialist_inference",
+      "parameters": {
+        "max_tokens": 256,
+        "temperature": 0.2,
+        "confidence_threshold": 0.7
+      }
+    },
+    {
+      "step_id": "plan_39d1cdca_post",
+      "agent_id": "system_grounder",
+      "agent_name": "Evidence Grounding & Spatial Summarizer",
+      "agent_version": "1.0.0",
+      "capability": "evidence_grounding",
+      "parameters": {
+        "target_classes": [],
+        "generate_visual_evidence": true,
+        "calculate_confidence": true
+      }
+    }
+  ],
+  "spans": [
+    {
+      "span_id": "spn_54243dbc77ae",
+      "parent_span_id": null,
+      "name": "Execution step (rs-vqa-agent)",
+      "component": "agent",
+      "agent_id": "rs-vqa-agent",
+      "agent_name": "Execution step (rs-vqa-agent)",
+      "agent_version": "1.0.0",
+      "start_time": 1790559347.9105537,
+      "end_time": 1790559347.9105961,
+      "duration_ms": 0.04,
+      "status": "SUCCESS",
+      "confidence": 0.93,
+      "input_references": {
+        "image_inputs": [
+          {
+            "image_id": "img_ec22868f",
+            "file_name": "sample 2.jpeg",
+            "format": "JPEG",
+            "modality": "OPTICAL",
+            "sensor_type": "Sentinel-2",
+            "timestamp": null,
+            "bounds": null,
+            "is_co_registered": null
+          }
+        ],
+        "resolved_query": "Describe what is visible in this satellite image."
+      },
+      "output_references": {
+        "raw_output": null,
+        "execution_id": "exec_plan_39d1cdca_infer_5968f0",
+        "agent_id": null
+      },
+      "evidence_references": [],
+      "parameters": {},
+      "retries": 0,
+      "retry_history": [],
+      "fallbacks": 0,
+      "fallback_history": [],
+      "error": null
+    }
+  ],
+  "events": [
+    {
+      "event_id": "evt_spn_e6dc0ae060a8",
+      "timestamp": 1790559347.899388,
+      "iso_timestamp": "2026-09-28T01:35:47.899523+00:00",
+      "event_type": "trace_started",
+      "component": "trace_service",
+      "status": "success",
+      "message": "Trace trc_99f05a636de44867 started for Request Q_cc7d5ce8",
+      "payload": {
+        "query": "Describe what is visible in this satellite image.",
+        "image_count": 1
+      }
+    },
+    {
+      "event_id": "evt_spn_ead0ac867779",
+      "timestamp": 1790559347.9053097,
+      "iso_timestamp": "2026-09-28T01:35:47.905417+00:00",
+      "event_type": "query_understanding_completed",
+      "component": "query_understanding",
+      "status": "success",
+      "message": "Query understanding completed successfully",
+      "payload": {
+        "tasks": [],
+        "modalities": []
+      }
+    },
+    {
+      "event_id": "evt_spn_5158ec25ac74",
+      "timestamp": 1790559347.908282,
+      "iso_timestamp": "2026-09-28T01:35:47.908459+00:00",
+      "event_type": "router_decision_completed",
+      "component": "router",
+      "status": "success",
+      "message": "Router selected 3 agent(s)",
+      "payload": {
+        "selected_agent_ids": [
+          "system_preprocessor",
+          "rs-vqa-agent",
+          "system_grounder"
+        ]
+      }
+    },
+    {
+      "event_id": "evt_spn_c9ef86aacc1b",
+      "timestamp": 1790559347.9107363,
+      "iso_timestamp": "2026-09-28T01:35:47.910787+00:00",
+      "event_type": "trace_finalized",
+      "component": "trace_service",
+      "status": "success",
+      "message": "Trace trc_99f05a636de44867 finalized with status SUCCESS",
+      "payload": {
+        "total_duration_ms": 11.35,
+        "final_status": "SUCCESS"
+      }
+    }
+  ],
+  "total_duration_ms": 11.35,
+  "status": "SUCCESS",
+  "metrics": {
+    "session_id": "bbef0dde-0b68-4271-87a4-3269df77b27b",
+    "span_count": 1,
+    "successful_spans": 1,
+    "failed_spans": 0,
+    "fallback_spans": 0
+  }
+}

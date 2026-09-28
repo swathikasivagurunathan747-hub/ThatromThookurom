@@ -23,6 +23,7 @@ class RSCaptionAdapter(BaseAgentAdapter):
         model = self.model_manager.get_model(self.agent_id)
         raw_pred = model.predict(query=query, batch=batch, parameters=parameters)
         return {
+            "answer": raw_pred["scene_description"],
             "caption": raw_pred["scene_description"],
             "landcover_breakdown": raw_pred["landcover_distribution_percent"],
             "detail_level": raw_pred["detail_level"],

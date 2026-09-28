@@ -1,0 +1,515 @@
+{
+  "trace_id": "trc_880c399ffd054ab1",
+  "request_id": "Q_c4ce3492",
+  "created_at": 1790531566.3297637,
+  "updated_at": 1790531566.333573,
+  "iso_created_at": "2026-09-27T17:52:46.329764+00:00",
+  "query": "Use optical and SAR images to identify water and built-up regions.",
+  "image_inputs": [
+    {
+      "image_id": null,
+      "file_name": "opt.tif",
+      "format": "GeoTIFF",
+      "modality": "OPTICAL",
+      "sensor_type": null,
+      "timestamp": null,
+      "bounds": null,
+      "is_co_registered": null
+    },
+    {
+      "image_id": null,
+      "file_name": "sar.tif",
+      "format": "GeoTIFF",
+      "modality": "SAR",
+      "sensor_type": null,
+      "timestamp": null,
+      "bounds": null,
+      "is_co_registered": null
+    }
+  ],
+  "query_understanding": {},
+  "router_decision": {
+    "plan_id": "plan_e8bae69a",
+    "query_id": "qo_f508020b",
+    "routing_status": "success",
+    "requirements": {
+      "query_id": "qo_f508020b",
+      "resolved_query": "Use optical and SAR images to identify water and built-up regions.",
+      "primary_capability": "cross_modal_fusion",
+      "secondary_capabilities": [
+        "single_image_vqa"
+      ],
+      "required_modality": "cross_modal_optical_sar",
+      "supported_formats": [
+        "tiff",
+        "geotiff"
+      ],
+      "benchmark_reference": "BigEarthNet / ISRO SAC",
+      "target_classes": [
+        "built-up area",
+        "water body"
+      ],
+      "image_count": 2,
+      "temporal_structure": "COREG_CROSS_MODAL_PAIR",
+      "max_acceptable_latency_ms": 2500,
+      "requires_cloud_resilience": true,
+      "requires_gpu": false
+    },
+    "candidate_evaluations": [
+      {
+        "agent_id": "rs-crossmodal-agent",
+        "name": "SatQuery Optical-SAR Cross-Modal Joint Analysis Agent",
+        "capability_score": 1.0,
+        "modality_score": 1.0,
+        "adaptation_score": 1.0,
+        "latency_score": 0.98,
+        "health_score": 1.0,
+        "composite_score": 0.998,
+        "rejection_reason": null
+      }
+    ],
+    "selected_agent_id": "rs-crossmodal-agent",
+    "steps": [
+      {
+        "step_id": "plan_e8bae69a_prep",
+        "step_type": "preprocessing",
+        "agent_id": "system_preprocessor",
+        "agent_name": "Geospatial Input Preprocessor & Validator",
+        "endpoint_url": "internal://preprocessor",
+        "inputs": [
+          {
+            "image_id": null,
+            "file_name": "opt.tif",
+            "format": "GeoTIFF",
+            "modality": "OPTICAL",
+            "sensor_type": "Generic_Optical",
+            "timestamp": null,
+            "spatial_bounds": null,
+            "resolution_m": null,
+            "is_co_registered": null
+          },
+          {
+            "image_id": null,
+            "file_name": "sar.tif",
+            "format": "GeoTIFF",
+            "modality": "SAR",
+            "sensor_type": "Generic_SAR",
+            "timestamp": null,
+            "spatial_bounds": null,
+            "resolution_m": null,
+            "is_co_registered": null
+          }
+        ],
+        "parameters": {
+          "image_count": 2,
+          "temporal_structure": "COREG_CROSS_MODAL_PAIR",
+          "verify_geospatial_bounds": true,
+          "normalize_bands": true,
+          "require_co_registration": true,
+          "resample_to_common_grid": true
+        },
+        "timeout_seconds": 10.0,
+        "depends_on": []
+      },
+      {
+        "step_id": "plan_e8bae69a_infer",
+        "step_type": "specialist_inference",
+        "agent_id": "rs-crossmodal-agent",
+        "agent_name": "SatQuery Optical-SAR Cross-Modal Joint Analysis Agent",
+        "endpoint_url": "http://localhost:8004/v1/crossmodal/execute",
+        "inputs": [
+          {
+            "depends_on_step": "plan_e8bae69a_prep"
+          }
+        ],
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "fusion_method": {
+              "type": "string",
+              "enum": [
+                "early_concat",
+                "cross_attention",
+                "feature_pyramid"
+              ],
+              "default": "cross_attention"
+            },
+            "sar_polarization": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [
+                "VV",
+                "VH"
+              ]
+            },
+            "optical_cloud_masking": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        },
+        "timeout_seconds": 30.0,
+        "depends_on": [
+          "plan_e8bae69a_prep"
+        ]
+      },
+      {
+        "step_id": "plan_e8bae69a_post",
+        "step_type": "evidence_grounding",
+        "agent_id": "system_grounder",
+        "agent_name": "Evidence Grounding & Spatial Summarizer",
+        "endpoint_url": "internal://evidence_grounder",
+        "inputs": [
+          {
+            "depends_on_step": "plan_e8bae69a_infer"
+          }
+        ],
+        "parameters": {
+          "target_classes": [
+            "built-up area",
+            "water body"
+          ],
+          "generate_visual_evidence": true,
+          "calculate_confidence": true
+        },
+        "timeout_seconds": 15.0,
+        "depends_on": [
+          "plan_e8bae69a_infer"
+        ]
+      }
+    ],
+    "fallback_routes": [],
+    "auditable_summary": {
+      "query_id": "qo_f508020b",
+      "selected_task": "cross_modal_fusion",
+      "primary_agent_id": "rs-crossmodal-agent",
+      "primary_agent_name": "SatQuery Optical-SAR Cross-Modal Joint Analysis Agent",
+      "models_and_tools": [
+        "Geospatial Input Preprocessor & Validator",
+        "SatQuery Optical-SAR Cross-Modal Joint Analysis Agent",
+        "Evidence Grounding & Spatial Summarizer"
+      ],
+      "applied_parameters": {
+        "type": "object",
+        "properties": {
+          "fusion_method": {
+            "type": "string",
+            "enum": [
+              "early_concat",
+              "cross_attention",
+              "feature_pyramid"
+            ],
+            "default": "cross_attention"
+          },
+          "sar_polarization": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [
+              "VV",
+              "VH"
+            ]
+          },
+          "optical_cloud_masking": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      },
+      "benchmark_dataset": "BigEarthNet / ISRO SAC",
+      "input_configuration": {
+        "image_count": 2,
+        "modality": "cross_modal_optical_sar",
+        "temporal_structure": "COREG_CROSS_MODAL_PAIR",
+        "formats": [
+          "tiff",
+          "geotiff"
+        ]
+      },
+      "routing_confidence": 0.998,
+      "fallback_assigned": null
+    },
+    "router_trace": [
+      {
+        "timestamp": "2026-09-27T17:52:46.330793+00:00",
+        "stage": "STEP_1_RECEIVE",
+        "action": "Receive Query Plan",
+        "status": "SUCCESS",
+        "details": {
+          "query_id": "qo_f508020b",
+          "raw_query": "Use optical and SAR images to identify water and built-up regions."
+        }
+      },
+      {
+        "timestamp": "2026-09-27T17:52:46.330804+00:00",
+        "stage": "STEP_2_VALIDATE",
+        "action": "Validate Query Plan",
+        "status": "SUCCESS",
+        "details": {
+          "validation_status": "PASSED"
+        }
+      },
+      {
+        "timestamp": "2026-09-27T17:52:46.330853+00:00",
+        "stage": "STEP_3_4_REQUIREMENTS",
+        "action": "Extract Requirements & Capabilities",
+        "status": "SUCCESS",
+        "details": {
+          "primary_capability": "cross_modal_fusion",
+          "required_modality": "cross_modal_optical_sar",
+          "temporal_structure": "COREG_CROSS_MODAL_PAIR",
+          "benchmark_reference": "BigEarthNet / ISRO SAC",
+          "target_classes": [
+            "built-up area",
+            "water body"
+          ]
+        }
+      },
+      {
+        "timestamp": "2026-09-27T17:52:46.331642+00:00",
+        "stage": "STEP_5_6_DISCOVERY",
+        "action": "Query Registry & Retrieve Candidates",
+        "status": "SUCCESS",
+        "details": {
+          "candidate_count": 1,
+          "candidate_ids": [
+            "rs-crossmodal-agent"
+          ]
+        }
+      },
+      {
+        "timestamp": "2026-09-27T17:52:46.331665+00:00",
+        "stage": "STEP_7_FILTER",
+        "action": "Filter Candidates",
+        "status": "SUCCESS",
+        "details": {
+          "qualified_count": 1,
+          "qualified_ids": [
+            "rs-crossmodal-agent"
+          ],
+          "disqualified_count": 0,
+          "disqualified_reasons": {}
+        }
+      },
+      {
+        "timestamp": "2026-09-27T17:52:46.331720+00:00",
+        "stage": "STEP_8_SCORE",
+        "action": "Score and Rank Candidates",
+        "status": "SUCCESS",
+        "details": {
+          "ranked_scores": [
+            {
+              "agent_id": "rs-crossmodal-agent",
+              "composite": 0.998,
+              "capability": 1.0,
+              "adaptation": 1.0,
+              "modality": 1.0
+            }
+          ]
+        }
+      },
+      {
+        "timestamp": "2026-09-27T17:52:46.331793+00:00",
+        "stage": "STEP_12_PLAN_GENERATED",
+        "action": "Generate Execution Plan",
+        "status": "SUCCESS",
+        "details": {
+          "plan_id": "plan_e8bae69a",
+          "selected_agent": "rs-crossmodal-agent",
+          "steps_count": 3,
+          "fallback_count": 0
+        }
+      }
+    ],
+    "rejection_errors": []
+  },
+  "selected_agents": [
+    {
+      "step_id": "plan_e8bae69a_prep",
+      "agent_id": "system_preprocessor",
+      "agent_name": "Geospatial Input Preprocessor & Validator",
+      "agent_version": "1.0.0",
+      "capability": "preprocessing",
+      "parameters": {
+        "image_count": 2,
+        "temporal_structure": "COREG_CROSS_MODAL_PAIR",
+        "verify_geospatial_bounds": true,
+        "normalize_bands": true,
+        "require_co_registration": true,
+        "resample_to_common_grid": true
+      }
+    },
+    {
+      "step_id": "plan_e8bae69a_infer",
+      "agent_id": "rs-crossmodal-agent",
+      "agent_name": "SatQuery Optical-SAR Cross-Modal Joint Analysis Agent",
+      "agent_version": "1.0.0",
+      "capability": "specialist_inference",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "fusion_method": {
+            "type": "string",
+            "enum": [
+              "early_concat",
+              "cross_attention",
+              "feature_pyramid"
+            ],
+            "default": "cross_attention"
+          },
+          "sar_polarization": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [
+              "VV",
+              "VH"
+            ]
+          },
+          "optical_cloud_masking": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      }
+    },
+    {
+      "step_id": "plan_e8bae69a_post",
+      "agent_id": "system_grounder",
+      "agent_name": "Evidence Grounding & Spatial Summarizer",
+      "agent_version": "1.0.0",
+      "capability": "evidence_grounding",
+      "parameters": {
+        "target_classes": [
+          "built-up area",
+          "water body"
+        ],
+        "generate_visual_evidence": true,
+        "calculate_confidence": true
+      }
+    }
+  ],
+  "spans": [
+    {
+      "span_id": "spn_d9330e23d55f",
+      "parent_span_id": null,
+      "name": "Execution step (rs-crossmodal-agent)",
+      "component": "agent",
+      "agent_id": "rs-crossmodal-agent",
+      "agent_name": "Execution step (rs-crossmodal-agent)",
+      "agent_version": "1.0.0",
+      "start_time": 1790531566.3333502,
+      "end_time": 1790531566.3334584,
+      "duration_ms": 0.11,
+      "status": "SUCCESS",
+      "confidence": 0.945,
+      "input_references": {
+        "image_inputs": [
+          {
+            "image_id": null,
+            "file_name": "opt.tif",
+            "format": "GeoTIFF",
+            "modality": "OPTICAL",
+            "sensor_type": null,
+            "timestamp": null,
+            "bounds": null,
+            "is_co_registered": null
+          },
+          {
+            "image_id": null,
+            "file_name": "sar.tif",
+            "format": "GeoTIFF",
+            "modality": "SAR",
+            "sensor_type": null,
+            "timestamp": null,
+            "bounds": null,
+            "is_co_registered": null
+          }
+        ],
+        "resolved_query": "Use optical and SAR images to identify water and built-up regions."
+      },
+      "output_references": {
+        "raw_output": null,
+        "execution_id": "exec_plan_e8bae69a_infer_25315f",
+        "agent_id": null
+      },
+      "evidence_references": [],
+      "parameters": {},
+      "retries": 0,
+      "retry_history": [],
+      "fallbacks": 0,
+      "fallback_history": [],
+      "error": null
+    }
+  ],
+  "events": [
+    {
+      "event_id": "evt_spn_c0a9a461971f",
+      "timestamp": 1790531566.3297637,
+      "iso_timestamp": "2026-09-27T17:52:46.329861+00:00",
+      "event_type": "trace_started",
+      "component": "trace_service",
+      "status": "success",
+      "message": "Trace trc_880c399ffd054ab1 started for Request Q_c4ce3492",
+      "payload": {
+        "query": "Use optical and SAR images to identify water and built-up regions.",
+        "image_count": 2
+      }
+    },
+    {
+      "event_id": "evt_spn_21f58fcc12c1",
+      "timestamp": 1790531566.3307161,
+      "iso_timestamp": "2026-09-27T17:52:46.330754+00:00",
+      "event_type": "query_understanding_completed",
+      "component": "query_understanding",
+      "status": "success",
+      "message": "Query understanding completed successfully",
+      "payload": {
+        "tasks": [],
+        "modalities": []
+      }
+    },
+    {
+      "event_id": "evt_spn_6050f09e5051",
+      "timestamp": 1790531566.331803,
+      "iso_timestamp": "2026-09-27T17:52:46.332143+00:00",
+      "event_type": "router_decision_completed",
+      "component": "router",
+      "status": "success",
+      "message": "Router selected 3 agent(s)",
+      "payload": {
+        "selected_agent_ids": [
+          "system_preprocessor",
+          "rs-crossmodal-agent",
+          "system_grounder"
+        ]
+      }
+    },
+    {
+      "event_id": "evt_spn_7bce9f70b508",
+      "timestamp": 1790531566.333573,
+      "iso_timestamp": "2026-09-27T17:52:46.333611+00:00",
+      "event_type": "trace_finalized",
+      "component": "trace_service",
+      "status": "success",
+      "message": "Trace trc_880c399ffd054ab1 finalized with status SUCCESS",
+      "payload": {
+        "total_duration_ms": 3.81,
+        "final_status": "SUCCESS"
+      }
+    }
+  ],
+  "total_duration_ms": 3.81,
+  "status": "SUCCESS",
+  "metrics": {
+    "session_id": "34dad154-810d-4be4-aa2c-a567f706daf3",
+    "span_count": 1,
+    "successful_spans": 1,
+    "failed_spans": 0,
+    "fallback_spans": 0
+  }
+}

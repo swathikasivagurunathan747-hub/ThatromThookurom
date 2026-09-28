@@ -31,7 +31,9 @@ class RSChangeAdapter(BaseAgentAdapter):
             changed_regions=raw_pred["changed_regions"]
         )
 
+        answer_text = raw_pred.get("answer") or raw_pred.get("change_description")
         return {
+            "answer": answer_text,
             "changed_regions": raw_pred["changed_regions"],
             "change_map": change_map_path,
             "change_description": raw_pred["change_description"],

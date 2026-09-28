@@ -122,6 +122,17 @@ export interface SingleImageAnalysisResult {
   visualEvidenceUrl?: string;
   confidence?: number;
   detectedCategories?: string[];
+  detectedChanges?: Array<{
+    id?: string;
+    label: string;
+    category?: string;
+    description?: string;
+  }>;
+  metrics?: {
+    changeAreaKm2?: number;
+    confidence?: number;
+    mainChange?: string;
+  };
   processingTimeMs?: number;
   timestamp: string;
   isDemoMode?: boolean;
@@ -148,6 +159,7 @@ export interface MapAreaSelection {
     lng: number;
   };
   areaKm2: number;
+  zoomLevel?: number;
 }
 
 export interface MapAnalysisResult {
@@ -195,8 +207,10 @@ export interface BiTemporalAnalysisResult {
   query: string;
   answer: string;
   changeVisualizationUrl?: string;
+  changeMapUrl?: string;
   beforeImageUrl?: string;
   afterImageUrl?: string;
+  confidence?: number;
   detectedChanges?: Array<{
     id?: string;
     label: string;

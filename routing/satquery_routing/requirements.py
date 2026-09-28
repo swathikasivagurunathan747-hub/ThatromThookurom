@@ -32,7 +32,9 @@ class RequirementExtractor:
         Maps a task string to a primary AgentCapability and secondary capabilities.
         """
         t = task_str.lower().strip()
-        if "grounding" in t:
+        if "spatial" in t or "map" in t:
+            return AgentCapability.SINGLE_IMAGE_VQA, [AgentCapability.REGION_GROUNDING]
+        elif "grounding" in t:
             return AgentCapability.REGION_GROUNDING, [AgentCapability.SINGLE_IMAGE_VQA]
         elif "change_vqa" in t or "quantif" in t:
             return AgentCapability.CHANGE_VQA, [AgentCapability.BITEMPORAL_CHANGE_DETECTION]
